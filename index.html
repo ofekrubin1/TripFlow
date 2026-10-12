@@ -1,0 +1,550 @@
+<!doctype html><html><head><meta charset="utf-8"><title>TripFlow</title><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+<style>
+/* Layout: one phone-width column of white cards on a cool grey ground, fixed 4-tab bar at the bottom. Single light look, carried over from the original app. */
+:root{
+  --navy:#0A1F44; --gold:#C9A45B; --gold-d:#B8943F; --ink:#33363D; --mute:#50535A; --line:#D0D1D3;
+  --bg:#F3F3F4; --card:#FFFFFF; --soft:#F8F8F9; --blue:#4A7CA5; --red:#c0392b; --hair:#E8E8EA;
+  --font:'Inter',system-ui,-apple-system,'Segoe UI','Arial Hebrew',Arial,sans-serif;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:var(--bg);color:var(--ink);font-family:var(--font);font-size:14px;-webkit-font-smoothing:antialiased}
+button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
+button:disabled{cursor:default}
+input,select,textarea{font:inherit;color:var(--ink)}
+:focus-visible{outline:2px solid color-mix(in srgb,var(--gold) 60%,transparent);outline-offset:1px}
+svg.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.5;stroke-linecap:round;stroke-linejoin:round;flex:none}
+#app{max-width:32rem;margin:0 auto;padding-inline:20px;padding-block:56px 110px;display:flex;flex-direction:column;gap:16px}
+.eyebrow{font-size:10px;font-weight:300;color:color-mix(in srgb,var(--mute) 40%,transparent);letter-spacing:.2em;margin:0}
+h1{font-size:20px;font-weight:600;letter-spacing:-.02em;margin:0;color:var(--ink)}
+.card{background:var(--card);border-radius:14px;padding:20px;position:relative;box-shadow:0 2px 12px rgba(10,31,68,.06),0 1px 3px rgba(10,31,68,.04),inset 0 1px 0 rgba(255,255,255,.8)}
+.card.gold::after{content:"";position:absolute;bottom:0;left:0;right:0;height:1.5px;background:linear-gradient(to right,transparent,rgba(201,164,91,.4),transparent)}
+.topbar{position:absolute;top:0;left:0;right:0;height:3px;border-radius:14px 14px 0 0;background:linear-gradient(to right,var(--navy),rgba(201,164,91,.6),var(--navy))}
+.h3{font-size:12px;font-weight:500;color:color-mix(in srgb,var(--mute) 60%,transparent);letter-spacing:.1em;margin:0}
+.row{display:flex;align-items:center;gap:8px}
+.between{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.grow{flex:1;min-width:0}
+.trunc{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lbl{font-size:12px;font-weight:500;color:var(--mute);letter-spacing:.02em;display:block}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
+.in{width:100%;background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px;font-size:14px;box-shadow:inset 0 2px 4px rgba(10,31,68,.04);min-width:0}
+.in::placeholder{color:color-mix(in srgb,var(--mute) 35%,transparent)}
+.in:focus{outline:none;border-color:rgba(201,164,91,.5);box-shadow:0 0 0 1px rgba(201,164,91,.2)}
+select.in{height:44px;padding-block:0;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='none' stroke='%2350535A' stroke-opacity='.5' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:left 12px center;padding-left:34px}
+.modal .in{background-color:var(--soft);padding:10px 12px;box-shadow:none}
+.modal select.in{height:40px}
+textarea.in{resize:none;overflow:hidden;display:block}
+.btn{border-radius:12px;padding:12px 20px;font-weight:500;font-size:14px;transition:transform .08s;display:flex;align-items:center;justify-content:center;gap:8px}
+.btn:active{transform:translateY(.5px)}
+.btn:disabled{opacity:.5}
+.btn.primary{background:var(--navy);color:#fff;border:1px solid rgba(201,164,91,.3);box-shadow:0 3px 10px rgba(10,31,68,.2),0 1px 3px rgba(10,31,68,.12)}
+.btn.goldb{background:linear-gradient(to bottom,var(--gold),var(--gold-d));color:#fff;border:1px solid rgba(201,164,91,.2);box-shadow:0 3px 10px rgba(201,164,91,.25),0 1px 3px rgba(201,164,91,.15)}
+.btn.secondary{background:#fff;color:var(--navy);border:1px solid rgba(201,164,91,.4);box-shadow:0 2px 8px rgba(10,31,68,.06)}
+.btn.danger{background:#fff;color:var(--red);border:1px solid rgba(192,57,43,.2);box-shadow:0 2px 8px rgba(192,57,43,.08)}
+.w100{width:100%}
+.chipbtn{display:flex;align-items:center;gap:4px;padding:4px 8px;border-radius:8px;background:rgba(10,31,68,.05);color:rgba(10,31,68,.6);font-size:11px;font-weight:500}
+.chipbtn.on{background:rgba(201,164,91,.15);color:var(--gold)}
+.pdf{display:flex;align-items:center;gap:2px;padding:2px 6px;border-radius:99px;border:1px solid rgba(10,31,68,.2);background:rgba(10,31,68,.05);color:rgba(10,31,68,.5);font-size:9px;font-weight:500}
+.pdf svg{width:10px;height:10px}
+.pdf:disabled{opacity:.4}
+.big{font-size:18px;font-weight:600;letter-spacing:-.02em;margin:0}
+.navy{color:var(--navy)}
+.list>*+*{border-top:1px solid var(--bg)}
+.ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex:none}
+.bar{height:4px;background:var(--bg);border-radius:99px;overflow:hidden;flex:1}
+.bar>i{display:block;height:100%;border-radius:99px;transition:width .5s}
+.sub{font-size:11px;font-weight:300;color:color-mix(in srgb,var(--mute) 50%,transparent);margin:0}
+.kebab{padding:6px;border-radius:8px;background:rgba(10,31,68,.05);color:rgba(10,31,68,.5);display:flex}
+.fbox{background:var(--soft);border-radius:10px;padding:12px;display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.flbl{font-size:10px;font-weight:500;color:color-mix(in srgb,var(--mute) 60%,transparent);letter-spacing:.05em}
+.wrap{display:flex;flex-wrap:wrap;gap:6px}
+.pill{padding:4px 10px;border-radius:7px;font-size:12px;font-weight:500;background:#fff;color:var(--mute);border:1px solid var(--line)}
+.pill.g{background:var(--gold);color:#fff;border-color:var(--gold)}
+.pill.n{background:var(--navy);color:#fff;border-color:var(--navy)}
+.empty{font-size:14px;font-weight:300;color:color-mix(in srgb,var(--mute) 40%,transparent);text-align:center;padding:24px 0;margin:0}
+.tog{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:8px;font-size:11px;font-weight:500;white-space:nowrap;background:var(--bg);color:color-mix(in srgb,var(--mute) 60%,transparent)}
+.tog i{width:24px;height:14px;border-radius:99px;background:var(--line);display:flex;align-items:center;padding:0 2px;flex:none;transition:background .15s}
+.tog i::after{content:"";width:10px;height:10px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
+.tog.on.g{background:rgba(201,164,91,.15);color:var(--gold)} .tog.on.g i{background:var(--gold)}
+.tog.on.b{background:rgba(74,124,165,.15);color:var(--blue)} .tog.on.b i{background:var(--blue)}
+.tog.on i::after{transform:translateX(-10px)}
+.cal{background:#fff;border:1px solid var(--line);border-radius:12px;padding:12px;box-shadow:inset 0 2px 4px rgba(10,31,68,.04)}
+.cal .g7{display:grid;grid-template-columns:repeat(7,1fr)}
+.cal .dow{text-align:center;font-size:10px;font-weight:500;color:color-mix(in srgb,var(--mute) 50%,transparent);padding:4px 0}
+.cal .d{height:32px;border-radius:7px;font-size:12px;font-weight:500;color:var(--ink);position:relative}
+.cal .d:disabled{color:var(--line)}
+.cal .d.sel{background:var(--gold);color:#fff}
+.cal .d.ok:not(.sel)::after{content:"";position:absolute;bottom:3px;left:50%;margin-left:-2px;width:4px;height:4px;border-radius:50%;background:rgba(201,164,91,.6)}
+.cal .nav{padding:4px;border-radius:8px;display:flex}
+.cal .nav:disabled{opacity:.2}
+.symsel{position:relative;width:48px;height:44px;flex:none;border:1px solid var(--line);border-radius:10px;background:#fff;display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:500;box-shadow:inset 0 2px 4px rgba(10,31,68,.04)}
+.symsel select{position:absolute;inset:0;opacity:0;width:100%;height:100%}
+.amt{position:relative;flex:1;min-width:0}
+.amt span{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:14px;font-weight:500;color:color-mix(in srgb,var(--mute) 50%,transparent)}
+.amt .in{padding-right:32px}
+.hint{font-size:11px;font-weight:300;color:var(--gold);margin:0}
+.dash{width:100%;height:44px;display:flex;align-items:center;justify-content:center;gap:6px;border:1px dashed var(--line);border-radius:10px;color:color-mix(in srgb,var(--mute) 50%,transparent);font-size:12px}
+.thumb{position:relative;height:44px;border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.thumb img{width:100%;height:100%;object-fit:cover}
+.thumb button{position:absolute;top:4px;left:4px;padding:2px;border-radius:50%;background:rgba(0,0,0,.5);color:#fff;display:flex}
+.sq{padding:8px;border-radius:10px;display:flex}
+.badge{font-size:9px;font-weight:500;padding:2px 8px;border-radius:99px;flex:none}
+.b-active{background:rgba(10,31,68,.1);color:var(--navy)} .b-completed{background:rgba(201,164,91,.1);color:var(--gold)} .b-planned{background:rgba(80,83,90,.1);color:var(--mute)}
+.b-show{background:rgba(201,164,91,.15);color:var(--gold)}
+.inl{margin-top:12px;padding-top:12px;border-top:1px solid rgba(208,209,211,.6);display:flex;flex-direction:column;gap:12px}
+.small-in{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 8px;font-size:14px;min-width:0}
+.fab{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom,0px));left:20px;width:52px;height:52px;border-radius:50%;background:var(--navy);color:#fff;display:flex;align-items:center;justify-content:center;z-index:40;box-shadow:0 4px 16px rgba(10,31,68,.35)}
+.fab svg{width:20px;height:20px;stroke-width:2}
+nav{position:fixed;bottom:0;left:0;right:0;z-index:50;background:rgba(255,255,255,.95);backdrop-filter:blur(12px);border-top:1px solid var(--hair);box-shadow:0 -2px 16px rgba(10,31,68,.06);padding-bottom:env(safe-area-inset-bottom,8px)}
+nav>div{display:flex;justify-content:space-around;max-width:32rem;margin:0 auto;padding:8px 8px 4px}
+nav button{display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 16px;border-radius:12px;color:color-mix(in srgb,var(--mute) 55%,transparent);font-size:10px;font-weight:300;letter-spacing:.02em}
+nav button svg{width:20px;height:20px}
+nav button.on{background:rgba(10,31,68,.08);color:var(--navy);font-weight:500;box-shadow:0 0 0 1px rgba(10,31,68,.08)}
+nav button.on svg{stroke-width:2}
+.menu{position:fixed;z-index:999;background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px 0;box-shadow:0 12px 32px rgba(10,31,68,.18),0 2px 8px rgba(10,31,68,.1)}
+.menu button{width:100%;display:flex;align-items:center;gap:10px;padding:10px 14px;font-size:14px;text-align:right}
+.menu button:hover{background:var(--bg)}
+.menu button svg{width:14px;height:14px;color:var(--mute)}
+.menu .del{color:#ef4444} .menu .del svg{color:inherit}
+.menu hr{border:0;height:1px;background:var(--hair);margin:4px 8px}
+.menu .subm{background:var(--soft);margin:0 6px 4px;border-radius:8px;padding:4px 0}
+.note{position:fixed;z-index:998;background:#fff;border:1px solid rgba(201,164,91,.3);border-radius:12px;padding:12px 16px;width:min(280px,calc(100vw - 24px));box-shadow:0 8px 24px rgba(10,31,68,.14);display:flex;gap:8px;align-items:flex-start;font-size:12px;font-weight:300;color:color-mix(in srgb,var(--mute) 80%,transparent);line-height:1.6}
+.note div{flex:1;min-width:0;white-space:pre-wrap;overflow-wrap:anywhere}
+.note a{color:#3b82f6}
+.ovl{position:fixed;inset:0;z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;background:rgba(0,0,0,.3);backdrop-filter:blur(4px)}
+.ovl.dark{background:rgba(0,0,0,.75)}
+.modal{background:#fff;border-radius:18px;width:100%;max-width:24rem;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(10,31,68,.18)}
+.modal header{display:flex;align-items:center;justify-content:space-between;padding:20px 20px 12px;border-bottom:1px solid var(--bg);font-size:14px;font-weight:600}
+.modal .body{padding:20px;display:flex;flex-direction:column;gap:16px}
+.dialog{background:#fff;border-radius:12px;padding:24px;width:100%;max-width:26rem;display:flex;flex-direction:column;gap:16px}
+.dialog h2{font-size:18px;font-weight:600;margin:0} .dialog p{margin:0;color:#6b7280;font-size:14px;line-height:1.5}
+.dialog .acts{display:flex;gap:8px;justify-content:flex-end}
+.dialog .acts button{height:36px;padding:0 16px;border-radius:6px;font-size:14px;font-weight:500;border:1px solid var(--line)}
+.dialog .acts .go{background:#ef4444;border-color:#ef4444;color:#fff} .dialog .acts .go.g{background:var(--gold);border-color:var(--gold)}
+.spin{width:24px;height:24px;border:2px solid rgba(201,164,91,.3);border-top-color:var(--navy);border-radius:50%;animation:sp 1s linear infinite;margin:35vh auto 0}
+@keyframes sp{to{transform:rotate(360deg)}}
+.center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:60vh}
+.tile{width:64px;height:64px;border-radius:16px;background:rgba(10,31,68,.05);display:flex;align-items:center;justify-content:center;margin-bottom:20px;color:rgba(10,31,68,.4)}
+.tile svg{width:28px;height:28px}
+.wheel{position:relative;width:64px;height:120px;border-radius:12px;overflow:hidden;background:var(--bg)}
+.wheel .sc{height:100%;overflow-y:scroll;scroll-snap-type:y mandatory;scrollbar-width:none;padding:40px 0}
+.wheel .sc::-webkit-scrollbar{display:none}
+.wheel .it{height:40px;display:flex;align-items:center;justify-content:center;scroll-snap-align:center;font-size:14px;color:color-mix(in srgb,var(--mute) 35%,transparent)}
+.wheel .it.on{color:var(--navy);font-weight:700;font-size:18px}
+.wheel::before{content:"";position:absolute;left:8px;right:8px;top:40px;height:40px;border-radius:8px;background:rgba(201,164,91,.12);border:1px solid rgba(201,164,91,.3);pointer-events:none}
+.sw{width:40px;height:24px;border-radius:99px;background:var(--line);display:flex;align-items:center;padding:0 2px;transition:background .15s}
+.sw::after{content:"";width:20px;height:20px;border-radius:50%;background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.2);transition:transform .15s}
+.sw.on{background:var(--gold)} .sw.on::after{transform:translateX(16px)}
+#toast{position:fixed;bottom:calc(90px + env(safe-area-inset-bottom,0px));left:50%;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 16px;border-radius:10px;font-size:13px;z-index:2000;max-width:calc(100vw - 32px)}
+.datebox{position:relative;height:48px;min-width:0}
+.datebox .face{position:absolute;inset:0;border:1px solid var(--line);border-radius:10px;background:#fff;display:flex;align-items:center;padding:0 36px 0 12px;font-size:16px;pointer-events:none;box-shadow:inset 0 2px 4px rgba(10,31,68,.04)}
+.datebox svg{position:absolute;right:12px;top:50%;margin-top:-8px;color:color-mix(in srgb,var(--mute) 40%,transparent);pointer-events:none}
+.datebox input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px}
+.datebox .clr{position:absolute;right:8px;top:50%;margin-top:-10px;z-index:2;padding:2px;display:flex;color:color-mix(in srgb,var(--mute) 50%,transparent)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation-duration:.01s!important}}
+</style>
+
+<div dir="rtl" lang="he">
+  <main id="app"><div class="spin"></div></main>
+  <nav><div id="nav"></div></nav>
+  <div id="layer"></div>
+  <div id="toast" hidden></div>
+  <input type="file" accept="image/*" id="a-file" hidden>
+</div>
+
+<script src="local-backend.js"></script>
+<script>
+(() => {
+'use strict';
+/* ---------- constants ---------- */
+const P = {
+  plane:'<path d="M17.8 19.2 16 11l3.5-3.5C21 6 21.5 4 21 3c-1-.5-3 0-4.5 1.5L13 8 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.500 5.300c.3.4.8.5 1.300.3l.5-.2c.4-.3.6-.7.5-1.200z"/>',
+  bed:'<rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4M8 6h.01M16 6h.01M12 6h.01M12 10h.01M12 14h.01M16 10h.01M16 14h.01M8 10h.01M8 14h.01"/>',
+  food:'<path d="M3 2v7c0 1.100.9 2 2 2h4a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.100.9 2 2 2h3Zm0 0v7"/>',
+  car:'<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.700-1.500-1.900C18.700 10.600 16 10 16 10s-1.300-1.400-2.200-2.300c-.5-.4-1.100-.7-1.800-.7H5c-.6 0-1.100.4-1.400.9l-1.400 2.900A3.700 3.700 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>',
+  ticket:'<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2ZM13 5v2M13 17v2M13 11v2"/>',
+  bag:'<path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4ZM3 6h18M16 10a4 4 0 0 1-8 0"/>',
+  shield:'<path d="M20 13c0 5-3.500 7.500-7.660 8.950a1 1 0 0 1-.67-.01C7.500 20.500 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.500-1.200 6.240-2.720a1.170 1.170 0 0 1 1.520 0C14.510 3.810 17 5 19 5a1 1 0 0 1 1 1z"/>',
+  dots3:'<circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/>',
+  pin:'<path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/>',
+  cal:'<path d="M8 2v4M16 2v4M3 10h18"/><rect x="3" y="4" width="18" height="18" rx="2"/>',
+  filter:'<path d="M22 3H2l8 9.460V19l4 2v-8.540z"/>',
+  plus:'<path d="M5 12h14M12 5v14"/>', x:'<path d="M18 6 6 18M6 6l12 12"/>',
+  kebab:'<circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/>',
+  pencil:'<path d="M21.174 6.812a1 1 0 0 0-3.986-3.987L3.842 16.174a2 2 0 0 0-.5.830l-1.321 4.352a.5.5 0 0 0 .623.622l4.353-1.320a2 2 0 0 0 .830-.497zM15 5l4 4"/>',
+  trash:'<path d="M3 6h18M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>', left:'<path d="m15 18-6-6 6-6"/>', right:'<path d="m9 18 6-6-6-6"/>', down:'<path d="m6 9 6 6 6-6"/>',
+  file:'<path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7ZM14 2v4a2 2 0 0 0 2 2h4M10 9H8M16 13H8M16 17H8"/>',
+  image:'<rect x="3" y="3" width="18" height="18" rx="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/>',
+  upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/>',
+  refresh:'<path d="M3 12a9 9 0 0 1 9-9 9.750 9.750 0 0 1 6.740 2.740L21 8M21 3v5h-5M21 12a9 9 0 0 1-9 9 9.750 9.750 0 0 1-6.740-2.740L3 16M8 16H3v5"/>',
+  copy:'<rect x="8" y="8" width="14" height="14" rx="2"/><path d="M4 16c-1.100 0-2-.9-2-2V4c0-1.100.9-2 2-2h10c1.100 0 2 .9 2 2"/>',
+  coins:'<circle cx="8" cy="8" r="6"/><path d="M18.090 10.370A6 6 0 1 1 10.340 18M7 6h1v4M16.710 13.880l.7.710-2.820 2.820"/>',
+  dollar:'<circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8M12 18V6"/>',
+  bell:'<path d="M10.268 21a2 2 0 0 0 3.464 0M3.262 15.326A1 1 0 0 0 4 17h16a1 1 0 0 0 .740-1.673C19.410 13.956 18 12.499 18 8A6 6 0 0 0 6 8c0 4.499-1.411 5.956-2.738 7.326"/>',
+  swap:'<path d="M8 3 4 7l4 4M4 7h16M16 21l4-4-4-4M20 17H4"/>',
+  note:'<path d="M16 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V8ZM15 3v4a2 2 0 0 0 2 2h4"/>',
+  dash:'<rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/>',
+  takeoff:'<path d="M2 22h20M6.360 17.400 4 17l-2-4 1.100-.550a2 2 0 0 1 1.800 0l.170.100a2 2 0 0 0 1.800 0L8 12 5 6l.9-.450a2 2 0 0 1 2.090.200l4.020 3a2 2 0 0 0 2.100.200l4.190-2.060a2.410 2.410 0 0 1 1.730-.170L21 7a1.400 1.400 0 0 1 .870 1.990l-.380.760c-.230.460-.6.840-1.070 1.080L7.580 17.200a2 2 0 0 1-1.220.180Z"/>',
+  folder:'<path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.900a2 2 0 0 1-1.690-.9L9.600 3.900A2 2 0 0 0 7.930 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"/>',
+  gear:'<path d="M12.220 2h-.44a2 2 0 0 0-2 2v.180a2 2 0 0 1-1 1.730l-.430.250a2 2 0 0 1-2 0l-.150-.080a2 2 0 0 0-2.730.730l-.220.380a2 2 0 0 0 .730 2.730l.150.100a2 2 0 0 1 1 1.720v.510a2 2 0 0 1-1 1.740l-.150.090a2 2 0 0 0-.730 2.730l.220.380a2 2 0 0 0 2.730.730l.150-.080a2 2 0 0 1 2 0l.430.250a2 2 0 0 1 1 1.730V20a2 2 0 0 0 2 2h.440a2 2 0 0 0 2-2v-.180a2 2 0 0 1 1-1.730l.430-.250a2 2 0 0 1 2 0l.150.080a2 2 0 0 0 2.730-.730l.220-.390a2 2 0 0 0-.730-2.730l-.150-.080a2 2 0 0 1-1-1.740v-.500a2 2 0 0 1 1-1.740l.150-.090a2 2 0 0 0 .730-2.730l-.220-.380a2 2 0 0 0-2.730-.730l-.150.080a2 2 0 0 1-2 0l-.430-.250a2 2 0 0 1-1-1.730V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+  luggage:'<path d="M6 20a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2ZM8 18V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v14M10 20v2M14 20v2"/>'
+};
+const ic = (n, style = '') => `<svg class="i" viewBox="0 0 24 24" ${style ? `style="${style}"` : ''}>${P[n]}</svg>`;
+const CATS = {
+  flights:{icon:'plane',label:'טיסות',color:'#0A1F44'}, accommodation:{icon:'bed',label:'לינה',color:'#2C5F7C'},
+  food:{icon:'food',label:'אוכל',color:'#C9A45B'}, transport:{icon:'car',label:'תחבורה',color:'#50535A'},
+  attractions:{icon:'ticket',label:'אטרקציות',color:'#6B7280'}, shopping:{icon:'bag',label:'קניות',color:'#8B6F47'},
+  insurance:{icon:'shield',label:'ביטוח',color:'#374151'}, other:{icon:'dots3',label:'אחר',color:'#9CA3AF'}
+};
+const CUR = [{code:'ILS',symbol:'₪',label:'שקל'},{code:'USD',symbol:'$',label:'דולר'},{code:'EUR',symbol:'€',label:'יורו'},{code:'THB',symbol:'฿',label:'באט תאילנדי'}];
+const DEF_RATES = {ILS:1, USD:3.7, EUR:4, THB:.1};
+const STATUS = {active:'פעיל', completed:'הושלם', planned:'מתוכנן'};
+const MONTHS = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+const TABS = [['dash','dash','דשבורד'],['plan','takeoff','הוצאות'],['trips','folder','טיולים'],['settings','gear','הגדרות']];
+
+/* ---------- helpers ---------- */
+const $ = id => document.getElementById(id);
+const h = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const il = (n, d = 2) => (n || 0).toLocaleString('he-IL', {maximumFractionDigits: d});
+const sym = c => (CUR.find(x => x.code === c) || {symbol: c}).symbol;
+const dmy = (s, f = 'y') => { if (!s) return ''; const [y, m, d] = s.split('-'); return f === 'y' ? `${d}/${m}/${y}` : f === 'yy' ? `${d}/${m}/${y.slice(2)}` : `${d}/${m}`; };
+const now = () => new Date().toISOString();
+const today = () => { const d = new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; };
+const ls = { get(k){ try { return localStorage.getItem(k); } catch { return null; } }, set(k,v){ try { localStorage.setItem(k,v); } catch {} } };
+const catInfo = c => c && c.startsWith('custom_') ? {icon:'dots3', label:c.slice(7), color:'#8B7355'} : (CATS[c] || CATS.other);
+const ratesOf = t => ({...DEF_RATES, ...(t && t.rates || {})});
+const conv = (amt, cur, t) => amt * (ratesOf(t)[cur] ?? 1);
+let toastT; const toast = m => { const el = $('toast'); el.textContent = m; el.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => el.hidden = true, 3000); };
+
+/* ---------- state ---------- */
+const S = {
+  tab: ['plan','trips','settings'].includes(location.hash.slice(1)) ? location.hash.slice(1) : 'dash',
+  ready: false, noDb: false, trips: [], expenses: [], tripId: ls.get('lastSelectedTripId'),
+  fDates: new Set(), fCats: new Set(), fOpen: false,
+  add: null, addKey: '', edit: null, menu: null, note: null, img: null, dialog: null,
+  newTrip: null, card: {}, rem: {open:false, email:'', enabled:true, hour:20, minute:0, saved:false, loaded:false}, busy: {}
+};
+let db = null, assets = null, downloads = null;
+
+const tripExp = id => S.expenses.filter(e => e.trip_id === id);
+const curTrip = () => S.trips.find(t => t.id === S.tripId) || S.trips.find(t => t.status === 'active') || S.trips[0];
+const planTrip = () => S.trips.find(t => t.id === S.tripId) || S.trips[0];
+const catOptions = t => { const set = new Set([...(t.customCategories || []), ...tripExp(t.id).map(e => e.category).filter(c => c && c.startsWith('custom_')).map(c => c.slice(7))]); return [...Object.entries(CATS).map(([k, v]) => [k, v.label]), ...[...set].map(c => ['custom_' + c, c])]; };
+
+/* ---------- data ---------- */
+async function w(fn) { try { return await fn(); } catch (e) { console.error(e); toast(e && e.code === 'invalid_argument' ? 'אין הרשאת כתיבה או שהנתונים לא תקינים' : 'השמירה נכשלה. נסה שוב.'); throw e; } }
+const T = () => db.collection('trips'), E = () => db.collection('expenses');
+const upTrip = (id, data) => w(() => T().doc(id).update({...data, updated_date: now()}));
+const delExp = id => w(() => E().doc(id).delete());
+
+async function init() {
+  db = await claude.use('db');
+  if (!db) { S.noDb = true; S.ready = true; return render(); }
+  claude.use('assets').then(a => { assets = a; render(); });
+  claude.use('downloads').then(d => { downloads = d; render(); });
+  let got = 0; const first = () => { if (++got >= 2) { S.ready = true; } render(); };
+  let f1 = false, f2 = false;
+  T().limit(1000).onSnapshot(s => { S.trips = s.docs.map(d => ({...d.data(), id: d.id})).sort((a, b) => (b.updated_date || '').localeCompare(a.updated_date || '')); if (!f1) { f1 = true; first(); } else render(); }, e => console.error(e));
+  E().limit(1000).onSnapshot(s => { S.expenses = s.docs.map(d => ({...d.data(), id: d.id})).sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')); if (!f2) { f2 = true; first(); } else render(); }, e => console.error(e));
+  db.doc('settings/reminder').onSnapshot(s => { if (s.exists && !S.rem.loaded) { const d = s.data(); const m = d.minute ?? 0; Object.assign(S.rem, {email: d.email || '', enabled: d.enabled !== false, hour: d.hour ?? 20, minute: [0,15,30,45].reduce((a, k) => Math.abs(k - m) < Math.abs(a - m) ? k : a), loaded: true}); render(); } }, () => {});
+}
+
+/* ---------- render ---------- */
+let dirty = false;
+function render() {
+  const a = document.activeElement;
+  if (a && a.id && $('app').contains(a) && /INPUT|TEXTAREA/.test(a.tagName) && !render.force) { dirty = true; return; }
+  dirty = false;
+  const keep = a && a.id;
+  $('nav').innerHTML = TABS.map(([k, i, l]) => `<button class="${S.tab === k ? 'on' : ''}" data-a="tab" data-v="${k}">${ic(i)}<span>${l}</span></button>`).join('');
+  $('app').innerHTML = !S.ready ? '<div class="spin"></div>' : S.noDb ? noDb() : ({dash: vDash, plan: vPlan, trips: vTrips, settings: vSettings}[S.tab])();
+  $('layer').innerHTML = vLayer();
+  if (keep && $(keep) && $(keep) !== document.activeElement) { try { $(keep).focus(); } catch {} }
+  document.querySelectorAll('.wheel .sc').forEach(sc => { const items = sc.dataset.k === 'hour' ? 24 : 4; const v = S.rem[sc.dataset.k]; sc.scrollTop = (sc.dataset.k === 'hour' ? v : [0,15,30,45].indexOf(v)) * 40; });
+  document.querySelectorAll('textarea.in').forEach(t => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; });
+}
+const rr = () => { render.force = true; render(); render.force = false; };
+const noDb = () => `<div class="center"><div class="tile">${ic('luggage')}</div><h2 class="big">לא ניתן לטעון את הנתונים</h2><p class="sub" style="font-size:14px;margin-top:4px">פתח את האפליקציה כשאתה מחובר לחשבון Claude שלך.</p></div>`;
+const head = (e, t) => `<div><p class="eyebrow">${e}</p><h1>${t}</h1></div>`;
+const tripSelect = t => `<select class="in" id="tripsel" data-c="trip">${S.trips.map(x => `<option value="${x.id}" ${t && x.id === t.id ? 'selected' : ''}>${h(x.name)}</option>`).join('')}</select>`;
+const noTrips = (msg, btn) => `<div class="center"><div class="tile">${ic('luggage')}</div><h2 class="big" style="margin-bottom:4px">אין טיולים עדיין</h2><p class="sub" style="font-size:14px;margin-bottom:24px">${msg}</p>${btn ? `<button class="btn primary" data-a="tab" data-v="trips">${ic('plus')}<span>צור טיול חדש</span></button>` : ''}</div>`;
+
+/* ---------- dashboard ---------- */
+function vDash() {
+  if (!S.trips.length) return noTrips('צור את הטיול הראשון שלך בטאב "טיולים"', true);
+  const t = curTrip(), all = tripExp(t.id);
+  const dates = [...new Set(all.map(e => e.date).filter(Boolean))].sort(), undated = all.some(e => !e.date);
+  const list = all.filter(e => { if (S.fDates.size) { const a = S.fDates.has('__undated__') && !e.date, b = e.date && S.fDates.has(e.date); if (!a && !b) return false; } return !(S.fCats.size && !S.fCats.has(e.category)); });
+  const total = list.reduce((s, e) => s + (e.amount || 0), 0);
+  const byCat = list.reduce((m, e) => (m[e.category] = (m[e.category] || 0) + (e.amount || 0), m), {});
+  const pos = Object.values(byCat).filter(v => v > 0).reduce((s, v) => s + v, 0);
+  const cats = [...new Set(all.map(e => e.category).filter(Boolean))], active = S.fDates.size > 0 || S.fCats.size > 0;
+  return head('דשבורד', 'מנהל הוצאות') + (S.trips.length > 1 ? tripSelect(t) : '') + `
+  <div class="card gold"><div class="topbar"></div><div style="padding-top:8px">
+    <div class="between"><div class="row grow" style="gap:6px;color:color-mix(in srgb,var(--mute) 70%,transparent)">${t.destination ? ic('pin', 'width:14px;height:14px') + `<span style="font-size:12px;font-weight:300">${h(t.destination)}</span>` : ''}</div><p class="eyebrow" style="letter-spacing:.1em;color:color-mix(in srgb,var(--mute) 50%,transparent)">סה״כ</p></div>
+    <div class="between"><div class="row grow"><h2 class="big trunc">${h(t.name)}</h2><button class="pdf" data-a="pdf" title="ייצוא לPDF" ${S.busy.pdf || !all.length || !downloads ? 'disabled' : ''}>${ic('file')}<span>${S.busy.pdf ? '...' : 'PDF'}</span></button></div><p class="big navy" style="white-space:nowrap">₪${il(total, 0)}</p></div>
+    ${t.start_date || t.end_date ? `<div class="row" style="gap:6px;margin-top:12px;padding-top:12px;border-top:1px solid rgba(208,209,211,.4)">${ic('cal', 'width:14px;height:14px;color:rgba(201,164,91,.7)')}<span style="font-size:11px;font-weight:300;color:color-mix(in srgb,var(--mute) 60%,transparent)">${dmy(t.start_date)}${t.end_date ? ' — ' + dmy(t.end_date) : ''}</span></div>` : ''}
+    ${t.budget > 0 ? `<div style="margin-top:12px"><div class="between sub" style="font-size:10px;margin-bottom:4px"><span>תקציב</span><span>₪${t.budget.toLocaleString()}</span></div><div class="bar" style="height:6px"><i style="width:${Math.min(total / t.budget * 100, 100)}%;background:${total > t.budget ? 'linear-gradient(90deg,#c0392b,#e74c3c)' : 'linear-gradient(90deg,#0A1F44,#C9A45B)'}"></i></div></div>` : ''}
+  </div></div>
+  ${Object.keys(byCat).length ? `<div class="card gold"><h3 class="h3" style="margin-bottom:8px">קטגוריות</h3><div class="list">${Object.entries(byCat).sort((a, b) => b[1] - a[1]).map(([c, v]) => { const i = catInfo(c), pct = pos > 0 ? (v / pos * 100).toFixed(0) : 0; return `<div class="row" style="gap:12px;padding:10px 0"><div class="ico" style="background:${i.color}0D;color:${i.color}">${ic(i.icon)}</div><div class="grow"><div class="between"><span style="font-weight:500">${h(i.label)}</span><span class="navy" style="font-weight:600">₪${il(v, 1)}</span></div><div class="row" style="margin-top:4px"><div class="bar"><i style="width:${Math.max(0, pct)}%;background:${i.color}"></i></div><span class="sub" style="font-size:10px;width:32px;text-align:left">${pct}%</span></div></div></div>`; }).join('')}</div></div>` : ''}
+  <div class="card"><div class="between" style="margin-bottom:12px"><h3 class="h3">הוצאות</h3><div class="row"><span style="font-size:10px;font-weight:300;color:var(--gold)">${list.length} פריטים</span><button class="chipbtn ${active || S.fOpen ? 'on' : ''}" data-a="ftoggle" aria-label="סינון">${ic('filter', 'width:14px;height:14px')}${active ? '<span style="font-size:10px">סינון פעיל</span>' : ''}</button><button class="chipbtn" data-a="goadd">${ic('plus', 'width:12px;height:12px;stroke-width:2')}<span>הוסף</span></button></div></div>
+    ${S.fOpen ? `<div class="fbox">${dates.length || undated ? `<span class="flbl">סינון לפי תאריך</span><div class="wrap">${dates.map(d => `<button class="pill ${S.fDates.has(d) ? 'g' : ''}" data-a="fdate" data-v="${d}">${d.slice(8)}/${d.slice(5, 7)}</button>`).join('')}${undated ? `<button class="pill ${S.fDates.has('__undated__') ? 'n' : ''}" data-a="fdate" data-v="__undated__">הוצאה מקדימה</button>` : ''}</div>` : ''}${cats.length ? `<span class="flbl">סינון לפי קטגוריה</span><div class="wrap">${cats.map(c => `<button class="pill ${S.fCats.has(c) ? 'n' : ''}" data-a="fcat" data-v="${h(c)}">${h(catInfo(c).label)}</button>`).join('')}</div>` : ''}${active ? `<button class="row" style="gap:4px;font-size:11px;color:var(--gold);font-weight:500" data-a="fclear">${ic('x', 'width:12px;height:12px;stroke-width:2')}נקה סינון</button>` : ''}</div>` : ''}
+    ${list.length ? `<div class="list">${list.map(expRow).join('')}</div>` : `<p class="empty">${active ? 'אין הוצאות עם הסינון הנוכחי' : 'אין הוצאות עדיין'}</p>`}
+  </div>`;
+}
+function expRow(e) {
+  const i = catInfo(e.category), oc = e.original_expense_currency, oa = e.original_expense_amount;
+  return `<div class="row" style="gap:12px;padding:12px 0" id="row-${e.id}"><div class="ico" style="background:${i.color}0D;color:${i.color}">${ic(i.icon)}</div><div class="grow"><p class="trunc" style="margin:0;font-weight:500">${h(e.title)}</p><p class="sub">${h(i.label)}${e.date ? ' · ' + dmy(e.date, 'dm') : ''}${oc && oa != null ? ` · <span dir="ltr" ${oc !== 'ILS' ? 'style="color:var(--gold);font-weight:600"' : ''}>${oa.toLocaleString()} ${oc === 'ILS' ? 'ILS' : h(sym(oc))}</span>` : ''}</p></div><span class="navy" dir="ltr" style="font-weight:600;flex:none">₪${e.amount < 0 ? '-' : ''}${il(Math.abs(e.amount || 0), 1)}</span><button class="kebab" data-a="emenu" data-v="${e.id}" aria-label="פעולות">${ic('kebab')}</button></div>`;
+}
+
+/* ---------- add expense ---------- */
+const defDate = t => { const d = today(); return !t.start_date || (d >= t.start_date && (!t.end_date || d <= t.end_date)) ? d : t.start_date; };
+function ensureAdd(t) {
+  const key = t.id + '-' + (t.currency || 'ILS');
+  if (S.addKey !== key || !S.add) { const b = t.start_date ? new Date(t.start_date + 'T00:00') : new Date(); S.addKey = key; S.add = {title:'', amount:'', currency: t.currency || 'ILS', category:'food', date: defDate(t), notes:'', image_url:'', undated:false, refund:false, y: b.getFullYear(), m: b.getMonth(), addCat:false, newCat:''}; }
+  return S.add;
+}
+function vPlan() {
+  if (!S.trips.length) return noTrips('צור טיול חדש בטאב "טיולים" וחזור לכאן');
+  const t = planTrip();
+  return head('תכנון', 'ניהול הוצאות') + `<div class="field"><label class="lbl" for="tripsel">בחר טיול</label>${tripSelect(t)}</div>` +
+    (t.status === 'completed' ? `<div style="background:rgba(201,164,91,.08);border:1px solid rgba(201,164,91,.2);border-radius:12px;padding:12px 16px;text-align:center"><p style="margin:0;font-size:12px;font-weight:300;color:var(--gold)">הטיול הושלם — לא ניתן להוסיף הוצאות חדשות</p></div>` : addForm(t));
+}
+function calendar(t, f) {
+  const s = t.start_date, e = t.end_date, first = new Date(f.y, f.m, 1), dim = new Date(f.y, f.m + 1, 0).getDate();
+  const iso = d => `${f.y}-${String(f.m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+  const prevOk = !s || iso(1) > s, nextOk = !e || iso(dim) < e;
+  let cells = ''; for (let i = 0; i < first.getDay(); i++) cells += '<span></span>';
+  for (let d = 1; d <= dim; d++) { const v = iso(d), ok = !s || !e || (v >= s && v <= e); cells += `<button type="button" class="d ${ok ? 'ok' : ''} ${f.date === v ? 'sel' : ''}" ${ok ? '' : 'disabled'} data-a="pick" data-v="${v}">${d}</button>`; }
+  return `<div class="cal"><div class="between" style="margin-bottom:8px"><button type="button" class="nav" data-a="cal" data-v="-1" ${prevOk ? '' : 'disabled'} aria-label="חודש קודם">${ic('right')}</button><span style="font-size:12px;font-weight:600">${MONTHS[f.m]} ${f.y}</span><button type="button" class="nav" data-a="cal" data-v="1" ${nextOk ? '' : 'disabled'} aria-label="חודש הבא">${ic('left')}</button></div><div class="g7">${['א','ב','ג','ד','ה','ו','ש'].map(d => `<div class="dow">${d}</div>`).join('')}</div><div class="g7">${cells}</div>${f.date ? `<p style="font-size:11px;font-weight:300;color:var(--gold);text-align:center;margin:8px 0 0">${dmy(f.date)}</p>` : ''}</div>`;
+}
+const curSel = (id, f, bind) => `<div class="symsel"><span>${h(sym(f.currency))}</span><select id="${id}" data-m="${bind}.currency" data-r aria-label="מטבע">${CUR.map(c => `<option value="${c.code}" ${c.code === f.currency ? 'selected' : ''}>${c.symbol} ${c.code} — ${c.label}</option>`).join('')}</select></div>`;
+const catSel = (id, t, f, bind) => `<select class="in" id="${id}" data-c="cat" data-v="${bind}">${catOptions(t).concat(f.category.startsWith('custom_') && !catOptions(t).some(o => o[0] === f.category) ? [[f.category, f.category.slice(7)]] : []).map(([k, l]) => `<option value="${h(k)}" ${k === f.category ? 'selected' : ''}>${h(l)}</option>`).join('')}<option value="__add__">+ הוסף קטגוריה...</option></select>`;
+const newCat = (bind, f) => f.addCat ? `<div class="row"><input class="in" style="padding:8px 12px;border-color:rgba(201,164,91,.5)" id="${bind}-newcat" data-m="${bind}.newCat" data-enter="savecat" data-v="${bind}" placeholder="שם הקטגוריה..." value="${h(f.newCat)}"><button class="sq" style="background:var(--gold);color:#fff" data-a="savecat" data-v="${bind}" aria-label="שמור קטגוריה">${ic('plus', 'stroke-width:2')}</button><button class="sq" style="background:var(--bg);color:var(--mute)" data-a="cancelcat" data-v="${bind}" aria-label="ביטול">${ic('x', 'stroke-width:2')}</button></div>` : '';
+const hintTxt = (f, t) => { const v = f.amount ? conv(parseFloat(f.amount), f.currency, t) : 0; return f.currency !== 'ILS' && v > 0 ? `≈ ₪${il(f.refund ? -v : v)}` : ''; };
+function addForm(t) {
+  const f = ensureAdd(t), hint = hintTxt(f, t);
+  return `<div class="card gold"><h3 class="h3" style="margin-bottom:16px">הוספת הוצאה</h3><div style="display:flex;flex-direction:column;gap:12px">
+    <div class="field"><label class="lbl" for="a-title">תיאור</label><input class="in" id="a-title" data-m="add.title" placeholder="למשל: ארוחת ערב" value="${h(f.title)}"></div>
+    <div class="field"><label class="lbl" for="a-amount">סכום ומטבע</label><div class="row"><div class="amt"><span>${h(sym(f.currency))}</span><input class="in" id="a-amount" type="number" inputmode="decimal" placeholder="0" data-m="add.amount" value="${h(f.amount)}"></div>${curSel('a-cur', f, 'add')}</div><p class="hint" id="a-hint" ${hint ? '' : 'hidden'}>${hint} (לפי שער מוגדר)</p></div>
+    <div class="field"><div class="between"><span class="lbl">תאריך</span><div class="row" style="gap:6px"><button type="button" class="tog g ${f.undated ? 'on' : ''}" data-a="flag" data-v="add.undated"><i></i><span>הוצאה מקדימה</span></button><button type="button" class="tog b ${f.refund ? 'on' : ''}" data-a="flag" data-v="add.refund"><i></i><span>החזר</span></button></div></div>${f.undated ? '' : calendar(t, f)}</div>
+    <div class="row" style="align-items:flex-start"><div class="field grow"><label class="lbl" for="a-cat">קטגוריה</label>${catSel('a-cat', t, f, 'add')}</div>${assets ? `<div class="field grow"><span class="lbl">תמונה <span style="font-weight:300;opacity:.5">(אופציונלי)</span></span>${f.image_url ? `<div class="thumb"><img src="${h(f.image_url)}" alt="הוצאה"><button data-a="rmimg" aria-label="הסר תמונה">${ic('x', 'width:12px;height:12px;stroke-width:2')}</button></div>` : `<button type="button" class="dash" data-a="pickimg" ${S.busy.up ? 'disabled' : ''}>${ic('upload', 'width:14px;height:14px')}<span>${S.busy.up ? 'מעלה...' : 'הוסף'}</span></button>`}</div>` : ''}</div>
+    ${newCat('add', f)}
+    <div class="field"><label class="lbl" for="a-notes">הערות</label><textarea class="in" id="a-notes" rows="1" data-m="add.notes" placeholder="הערות נוספות...">${h(f.notes)}</textarea></div>
+    <button class="btn goldb w100" id="a-save" style="margin-top:8px" data-a="addsave" ${!f.title || !f.amount || S.busy.add ? 'disabled' : ''}>${S.busy.add ? 'שומר...' : 'הוסף הוצאה'}</button>
+  </div></div>`;
+}
+
+/* ---------- trips ---------- */
+const blankTrip = () => ({name:'', destination:'', start_date:'', end_date:'', budget:'', currency:'ILS', ratesOpen:false, rates:{...DEF_RATES}, badEnd:false});
+function vTrips() {
+  const all = e => S.expenses.filter(x => x.trip_id === e).reduce((s, x) => s + (x.amount || 0), 0), o = {active:0, completed:1, planned:2};
+  const sorted = [...S.trips].sort((a, b) => (o[a.status] ?? 2) !== (o[b.status] ?? 2) ? (o[a.status] ?? 2) - (o[b.status] ?? 2) : a.status === 'completed' && b.status === 'completed' ? (b.end_date || '').localeCompare(a.end_date || '') : 0);
+  return head('ארכיון', 'כל הטיולים') + (S.newTrip ? newTripForm(S.newTrip) : '') +
+    (!S.trips.length && !S.newTrip ? `<div class="center" style="min-height:40vh"><div class="tile" style="width:56px;height:56px">${ic('folder')}</div><p class="sub" style="font-size:14px">אין טיולים עדיין</p><p class="sub" style="font-size:12px;opacity:.6;margin-top:4px">לחץ + כדי ליצור טיול</p></div>` : `<div style="display:flex;flex-direction:column;gap:12px">${sorted.map(t => tripCard(t, all(t.id))).join('')}</div>`) +
+    `<button class="fab" data-a="fab" aria-label="${S.newTrip ? 'סגור' : 'טיול חדש'}">${ic(S.newTrip ? 'x' : 'plus')}</button>`;
+}
+const dateBox = (id, v, bind, min) => `<div class="datebox"><div class="face" style="color:${v ? 'var(--ink)' : 'var(--line)'}">${v ? dmy(v) : 'dd/mm/yyyy'}</div>${v ? `<button type="button" class="clr" data-a="clrdate" data-v="${bind}" aria-label="נקה תאריך">${ic('x')}</button>` : ic('cal')}<input type="date" id="${id}" data-c="ntdate" data-v="${bind}" value="${v}" ${min ? `min="${min}"` : ''}></div>`;
+const ratesBox = (r, key, close) => `<div class="inl"><p class="sub">שערי מטבע עבור הטיול הזה (₪ ל-1 יחידה)</p>${CUR.filter(c => c.code !== 'ILS').map(c => `<div class="row"><div style="width:32px;height:32px;border-radius:8px;background:rgba(10,31,68,.05);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--navy);flex:none">${c.symbol}</div><span style="font-size:12px;color:var(--mute);flex:none">1 ${c.code} =</span><input class="small-in grow" type="number" step="0.01" id="r-${key}-${c.code}" data-rate="${key}" data-v="${c.code}" value="${r[c.code] ?? ''}" aria-label="שער ${c.label}"><span style="font-size:12px;opacity:.4">₪</span></div>`).join('')}${close ? `<div class="row"><button class="btn ${S.card[key] && S.card[key].saved ? 'secondary' : 'goldb'} grow" style="padding:8px;font-size:12px" data-a="saverates" data-v="${key}" ${S.busy['r' + key] ? 'disabled' : ''}>${ic(S.card[key] && S.card[key].saved ? 'check' : 'refresh', 'width:14px;height:14px')}<span>${S.busy['r' + key] ? 'מעדכן...' : S.card[key] && S.card[key].saved ? 'נשמר!' : 'שמור שערים'}</span></button><button class="btn secondary" style="padding:8px 16px;font-size:12px" data-a="cardclose" data-v="${key}">סגור</button></div>` : ''}</div>`;
+function newTripForm(n) {
+  return `<div class="card gold"><h3 class="h3" style="margin-bottom:16px">טיול חדש</h3><div style="display:flex;flex-direction:column;gap:12px">
+    <div class="field"><label class="lbl" for="n-name">שם הטיול</label><input class="in" id="n-name" data-m="newTrip.name" placeholder="למשל: רומא 2025" value="${h(n.name)}"></div>
+    <div class="field"><label class="lbl" for="n-dest">יעד</label><input class="in" id="n-dest" data-m="newTrip.destination" placeholder="עיר / מדינה" value="${h(n.destination)}"></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div class="field"><label class="lbl" for="n-start">תאריך התחלה</label>${dateBox('n-start', n.start_date, 'start_date')}</div><div class="field"><label class="lbl" for="n-end">תאריך סיום</label>${dateBox('n-end', n.end_date, 'end_date', n.start_date)}${n.badEnd ? '<p style="margin:0;font-size:11px;color:#ef4444;font-weight:500">תאריך סיום לא תקין. נסה שוב!</p>' : ''}</div></div>
+    <div style="display:grid;grid-template-columns:1fr auto 2fr;gap:8px;align-items:end"><div class="field" style="gap:4px"><label class="sub" style="font-size:9px" for="n-budget">תקציב</label><input class="in" style="height:44px;padding:0 8px" id="n-budget" type="number" placeholder="0" data-m="newTrip.budget" value="${h(n.budget)}"></div><div class="field" style="gap:4px"><span class="sub" style="font-size:9px;white-space:nowrap">ברירת מחדל</span>${curSel('n-cur', n, 'newTrip')}</div><div class="field" style="gap:4px"><span class="sub" style="font-size:9px">שערי מטבע</span><button type="button" data-a="ntrates" style="height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:6px;font-size:12px;font-weight:500;border:1px solid ${n.ratesOpen ? 'var(--gold)' : 'rgba(201,164,91,.4)'};background:${n.ratesOpen ? 'var(--gold)' : 'rgba(201,164,91,.1)'};color:${n.ratesOpen ? '#fff' : 'var(--gold)'}">${ic('coins', 'width:14px;height:14px')}שערי מטבע</button></div></div>
+    ${n.ratesOpen ? ratesBox(n.rates, '__new__', false) : ''}
+    <button class="btn primary w100" id="n-save" style="margin-top:8px" data-a="createtrip" ${!n.name || S.busy.trip ? 'disabled' : ''}>${S.busy.trip ? 'יוצר...' : 'צור טיול'}</button>
+  </div></div>`;
+}
+function tripCard(t, total) {
+  const c = S.card[t.id] || {};
+  return `<div class="card gold"><div class="row" style="align-items:flex-start"><div class="grow">
+    <div class="row" style="margin-bottom:4px">${c.mode === 'rename' ? `<input class="small-in grow" style="font-weight:600;background:var(--bg);border-color:rgba(201,164,91,.4)" id="rn-${t.id}" data-card="${t.id}" data-v="name" data-enter="renamesave" value="${h(c.name)}"><button class="sq" style="padding:4px;background:rgba(10,31,68,.1);color:var(--navy)" data-a="renamesave" data-v="${t.id}" aria-label="שמור">${ic('check', 'width:14px;height:14px;stroke-width:2')}</button><button class="sq" style="padding:4px;background:var(--bg);color:var(--mute)" data-a="cardclose" data-v="${t.id}" aria-label="ביטול">${ic('x', 'width:14px;height:14px;stroke-width:2')}</button>` : `<h3 class="trunc" style="margin:0;font-size:16px;font-weight:600">${h(t.name)}</h3><span class="badge b-${STATUS[t.status] ? t.status : 'planned'}">${STATUS[t.status] || 'מתוכנן'}</span><button class="badge b-show" data-a="showtrip" data-v="${t.id}">הצג טיול</button>`}</div>
+    ${t.destination ? `<div class="row" style="gap:6px;margin-bottom:8px;color:color-mix(in srgb,var(--mute) 60%,transparent)">${ic('pin', 'width:12px;height:12px')}<span style="font-size:12px;font-weight:300">${h(t.destination)}</span></div>` : ''}
+    <div class="row" style="gap:16px"><p class="big navy">₪${total.toLocaleString()}</p>${t.start_date ? `<div class="row" style="gap:4px;color:color-mix(in srgb,var(--mute) 40%,transparent)">${ic('cal', 'width:12px;height:12px')}<span style="font-size:10px;font-weight:300">${dmy(t.start_date, 'yy')}${t.end_date ? ' — ' + dmy(t.end_date, 'yy') : ''}</span></div>` : ''}</div>
+    </div>${c.mode === 'rename' ? '' : `<button class="kebab" style="padding:8px;border-radius:10px" data-a="tmenu" data-v="${t.id}" aria-label="פעולות">${ic('kebab')}</button>`}</div>
+    ${c.mode === 'rates' ? ratesBox(c.rates, t.id, true) : ''}
+    ${c.mode === 'cur' ? `<div class="inl"><div class="row"><span style="font-size:11px;font-weight:500;opacity:.6;flex:none">מטבע ברירת מחדל:</span><select class="small-in" id="dc-${t.id}" data-card="${t.id}" data-v="currency" style="min-width:72px">${CUR.map(x => `<option ${x.code === c.currency ? 'selected' : ''}>${x.code}</option>`).join('')}</select><button class="row" style="gap:4px;padding:6px 10px;border-radius:8px;background:var(--gold);color:#fff;font-size:12px;font-weight:500" data-a="savecur" data-v="${t.id}">${ic('check', 'width:12px;height:12px;stroke-width:2')}שמור</button><button class="sq" style="padding:6px;border-radius:8px;background:var(--bg);color:var(--mute)" data-a="cardclose" data-v="${t.id}" aria-label="סגור">${ic('x', 'width:12px;height:12px;stroke-width:2')}</button></div></div>` : ''}
+    ${c.mode === 'dates' ? `<div class="inl"><p class="flbl" style="margin:0;font-size:11px">שינוי תאריכי טיול</p><div style="display:grid;grid-template-columns:1fr 1fr;gap:8px"><div class="field" style="gap:4px"><label style="font-size:10px;font-weight:500;color:var(--mute)" for="ds-${t.id}">תאריך התחלה</label><input type="date" class="small-in" id="ds-${t.id}" data-card="${t.id}" data-v="start_date" value="${c.start_date}"></div><div class="field" style="gap:4px"><label style="font-size:10px;font-weight:500;color:var(--mute)" for="de-${t.id}">תאריך סיום</label><input type="date" class="small-in" id="de-${t.id}" data-card="${t.id}" data-v="end_date" min="${c.start_date}" value="${c.end_date}"></div></div><div class="row"><button class="row grow" style="justify-content:center;gap:6px;padding:8px;border-radius:9px;background:var(--gold);color:#fff;font-size:12px;font-weight:500" data-a="savedates" data-v="${t.id}" ${S.busy['d' + t.id] ? 'disabled' : ''}>${ic('check', 'width:14px;height:14px;stroke-width:2')}${S.busy['d' + t.id] ? 'שומר...' : 'שמור תאריכים'}</button><button style="padding:8px 12px;border-radius:9px;background:var(--bg);color:var(--mute);font-size:12px;font-weight:500" data-a="cardclose" data-v="${t.id}">ביטול</button></div></div>` : ''}
+  </div>`;
+}
+
+/* ---------- settings ---------- */
+function vSettings() {
+  const r = S.rem, wheel = (k, items, label) => `<div style="display:flex;flex-direction:column;align-items:center;gap:6px"><span class="flbl">${label}</span><div class="wheel"><div class="sc" data-k="${k}" tabindex="0" aria-label="${label}">${items.map(v => `<div class="it ${v === r[k] ? 'on' : ''}">${String(v).padStart(2, '0')}</div>`).join('')}</div></div></div>`;
+  return head('הגדרות', 'ניהול') + `
+  <div class="card gold"><div class="row" style="align-items:flex-start;gap:12px"><div class="ico" style="width:40px;height:40px;border-radius:12px;background:rgba(10,31,68,.05);color:rgba(10,31,68,.5)">${ic('luggage', 'width:20px;height:20px')}</div><div><h3 style="margin:0 0 2px;font-size:14px;font-weight:600">מנהל הוצאות טיולים</h3><p class="sub" style="font-size:12px;line-height:1.6">גרסת Premium Business — ניהול יוקרתי ומקצועי של הוצאות הטיולים שלך.</p></div></div></div>
+  <div class="card"><button class="row w100" style="text-align:right" data-a="remtoggle" aria-expanded="${r.open}">${ic('bell', 'color:var(--gold)')}<h3 class="h3 grow" style="color:var(--navy)">תזכורת יומית</h3>${ic('down', `color:color-mix(in srgb,var(--mute) 40%,transparent);transition:transform .2s;transform:rotate(${r.open ? 180 : 0}deg)`)}</button>
+    ${r.open ? `<div style="margin-top:16px;border-top:1px solid rgba(10,31,68,.1);padding-top:16px;display:flex;flex-direction:column;gap:16px"><div><p class="sub" style="font-size:12px;line-height:1.6;opacity:1">תזכורת תישלח למייל בשעה שהוגדרה — רק בימים שנמצאים בטווח טיול פעיל.</p><p style="margin:0;font-size:11px;color:rgba(201,164,91,.9);padding:8px 12px;line-height:1.6">⚠️ שליחת המייל עדיין לא מחוברת בגרסה הזו. ההגדרות נשמרות בלבד.</p></div>
+      <div class="field"><label class="lbl" for="rem-email">כתובת אימייל</label><input class="in" style="padding:10px 12px;direction:ltr" type="email" id="rem-email" data-m="rem.email" placeholder="your@email.com" value="${h(r.email)}"></div>
+      <div class="field"><span class="lbl">שעת שליחה</span><div class="row" dir="ltr" style="justify-content:center;gap:12px;padding:8px 0">${wheel('hour', Array.from({length: 24}, (_, i) => i), 'שעה')}<span style="font-size:24px;font-weight:300;opacity:.3;margin-top:20px">:</span>${wheel('minute', [0, 15, 30, 45], 'דקות')}</div></div>
+      <div class="between"><span class="lbl">הפעל תזכורות</span><div dir="ltr"><button class="sw ${r.enabled ? 'on' : ''}" data-a="remsw" role="switch" aria-checked="${r.enabled}" aria-label="הפעל תזכורות"></button></div></div>
+      <button class="btn w100" id="rem-save" style="background:var(--navy);color:#fff;padding:10px;border-radius:10px" data-a="remsave" ${S.busy.rem || !r.email ? 'disabled' : ''}>${r.saved ? ic('check', 'stroke-width:2') + '<span>נשמר!</span>' : S.busy.rem ? 'שומר...' : 'שמור הגדרות תזכורת'}</button></div>` : ''}
+  </div>
+  <div class="card"><div style="border-bottom:1px solid rgba(10,31,68,.1);padding-bottom:12px;margin-bottom:16px"><h3 class="h3" style="color:var(--navy)">אזור מתקדם</h3></div><button class="btn danger w100" data-a="askreset" ${S.busy.reset ? 'disabled' : ''}>${ic('trash')}<span>${S.busy.reset ? 'מאפס...' : 'איפוס כל הנתונים'}</span></button></div>`;
+}
+
+/* ---------- floating layer ---------- */
+function vLayer() {
+  let o = '';
+  if (S.menu) {
+    const m = S.menu, pos = `top:${m.top}px;right:${m.right}px`;
+    if (m.type === 'e') { const e = S.expenses.find(x => x.id === m.id); if (e) o += `<div class="menu" style="${pos};min-width:160px">${e.notes ? `<button data-a="note" data-v="${e.id}">${ic('note', 'color:var(--gold)')}<span>${S.note && S.note.id === e.id ? 'הסתר הערה' : 'הצג הערה'}</span></button>` : ''}${e.image_url ? `<button data-a="img" data-v="${e.id}">${ic('image', 'color:var(--blue)')}<span>הצג תמונה</span></button>` : ''}<button data-a="edit" data-v="${e.id}">${ic('pencil')}<span>עריכה</span></button><hr><button class="del" data-a="delexp" data-v="${e.id}">${ic('trash')}<span>מחיקה</span></button></div>`; }
+    else { const t = S.trips.find(x => x.id === m.id); if (t) o += `<div class="menu" style="${pos};width:208px"><button data-a="tm" data-v="rename">${ic('pencil')}<span>שנה שם</span></button>${m.status ? `<div class="subm"><p class="flbl" style="margin:0;padding:4px 12px">בחר סטטוס</p>${['active', 'completed'].filter(s => s !== t.status).map(s => `<button data-a="tm" data-v="toggle" style="padding:8px 12px">${ic('check', 'width:12px;height:12px;color:var(--gold)')}<span>${STATUS[s]}</span></button>`).join('')}<button data-a="tm" data-v="back" style="padding:6px 12px;font-size:12px;opacity:.5">← חזור</button></div>` : `<button data-a="tm" data-v="status">${ic('swap')}<span>שינוי סטטוס</span></button>`}<button data-a="tm" data-v="rates">${ic('coins', 'color:var(--gold)')}<span>עדכון שערי מטבע</span></button><button data-a="tm" data-v="cur">${ic('dollar', 'color:var(--gold)')}<span>עדכון מטבע ברירת מחדל</span></button><button data-a="tm" data-v="dates">${ic('cal')}<span>שינוי תאריכים</span></button><button data-a="tm" data-v="dup">${ic('copy')}<span>שכפל טיול</span></button><hr><button class="del" data-a="tm" data-v="del">${ic('trash')}<span>מחק טיול</span></button></div>`; }
+  }
+  if (S.note) { const e = S.expenses.find(x => x.id === S.note.id); if (e && e.notes) o += `<div class="note" style="top:${S.note.top}px;left:${S.note.left}px"><div>${h(e.notes).replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>')}</div><button data-a="noteclose" aria-label="סגור">${ic('x', 'width:12px;height:12px;stroke-width:2;opacity:.4')}</button></div>`; }
+  if (S.img) o += `<div class="ovl dark" data-a="imgclose"><img src="${h(S.img)}" alt="הוצאה" style="max-width:100%;max-height:80vh;border-radius:14px;object-fit:contain"></div>`;
+  if (S.edit) o += editModal(S.edit);
+  if (S.dialog) { const d = S.dialog; o += `<div class="ovl dark"><div class="dialog" role="alertdialog" aria-labelledby="dlg-t"><h2 id="dlg-t">${h(d.title)}</h2><p>${h(d.text)}</p><div class="acts"><button data-a="dlgno">${h(d.no)}</button><button class="go ${d.gold ? 'g' : ''}" data-a="dlgyes">${h(d.yes)}</button></div></div></div>`; }
+  return o;
+}
+function editModal(f) {
+  const t = S.trips.find(x => x.id === f.trip_id) || {}, hint = hintTxt(f, t);
+  return `<div class="ovl" data-a="editclose"><div class="modal" data-stop><header><span>עריכת הוצאה</span><button class="sq" style="padding:6px;border-radius:8px;color:var(--mute)" data-a="editclose" aria-label="סגור">${ic('x')}</button></header><div class="body">
+    <div class="field"><label class="lbl" for="e-title">תיאור</label><input class="in" id="e-title" data-m="edit.title" value="${h(f.title)}"></div>
+    <div class="field"><label class="lbl" for="e-amount">סכום ומטבע</label><div class="row"><div class="amt"><span>${h(sym(f.currency))}</span><input class="in" id="e-amount" type="number" inputmode="decimal" data-m="edit.amount" value="${h(f.amount)}"></div><select class="in" style="width:112px;flex:none" id="e-cur" data-m="edit.currency" data-r aria-label="מטבע">${CUR.map(c => `<option value="${c.code}" ${c.code === f.currency ? 'selected' : ''}>${c.code} — ${c.label}</option>`).join('')}</select></div><p class="hint" id="e-hint" style="font-weight:400" ${hint ? '' : 'hidden'}>${hint}</p></div>
+    <div class="field"><label class="lbl" for="e-cat">קטגוריה</label>${catSel('e-cat', t, f, 'edit')}${newCat('edit', f)}</div>
+    <div class="field"><div class="between"><label class="lbl" for="e-date">תאריך</label><div class="row" style="gap:6px"><button type="button" class="tog g ${f.undated ? 'on' : ''}" style="font-size:10px;padding:4px 8px" data-a="flag" data-v="edit.undated">ללא תאריך</button><button type="button" class="tog b ${f.refund ? 'on' : ''}" style="font-size:10px;padding:4px 8px" data-a="flag" data-v="edit.refund">החזר</button></div></div>${f.undated ? '' : `<input type="date" class="in" id="e-date" data-m="edit.date" value="${h(f.date)}" ${t.start_date ? `min="${t.start_date}"` : ''} ${t.end_date ? `max="${t.end_date}"` : ''}>`}</div>
+    <div class="field"><label class="lbl" for="e-notes">הערות</label><textarea class="in" id="e-notes" rows="1" data-m="edit.notes" placeholder="הערות נוספות...">${h(f.notes)}</textarea></div>
+    <div class="row" style="padding-top:4px"><button class="btn grow" id="e-save" style="background:var(--gold);color:#fff;padding:10px;border-radius:10px" data-a="editsave" ${!f.title || !f.amount || S.busy.edit ? 'disabled' : ''}>${ic('check', 'stroke-width:2')}${S.busy.edit ? 'שומר...' : 'שמור שינויים'}</button><button class="btn" style="background:var(--bg);color:var(--mute);padding:10px 16px;border-radius:10px" data-a="editclose">ביטול</button></div>
+  </div></div></div>`;
+}
+
+/* ---------- actions ---------- */
+const busy = async (k, fn) => { S.busy[k] = true; rr(); try { await fn(); } catch {} finally { S.busy[k] = false; rr(); } };
+const clearF = () => { S.fDates = new Set(); S.fCats = new Set(); };
+const setTrip = id => { S.tripId = id; ls.set('lastSelectedTripId', id); };
+const go = tab => { S.tab = tab; S.menu = S.note = null; try { history.replaceState(null, '', '#' + tab); } catch {} window.scrollTo(0, 0); };
+const formOf = k => S[k];
+function menuAt(btn, type, id, wdt) { const r = btn.getBoundingClientRect(); let right = Math.max(0, innerWidth - r.right); if (r.right - wdt < 8) right = innerWidth - wdt - 8; S.menu = S.menu && S.menu.id === id ? null : {type, id, top: Math.min(r.bottom + 4, innerHeight - 60), right: Math.max(8, right)}; }
+
+const A = {
+  tab: v => go(v),
+  ftoggle: () => { if (S.fOpen) clearF(); S.fOpen = !S.fOpen; },
+  fdate: v => { S.fDates.has(v) ? S.fDates.delete(v) : S.fDates.add(v); },
+  fcat: v => { S.fCats.has(v) ? S.fCats.delete(v) : S.fCats.add(v); },
+  fclear: clearF,
+  goadd: () => { const t = curTrip(); if (t) setTrip(t.id); go('plan'); },
+  emenu: (v, el) => menuAt(el, 'e', v, 160),
+  tmenu: (v, el) => menuAt(el, 't', v, 208),
+  note: v => { const r = $('row-' + v).getBoundingClientRect(); S.note = S.note && S.note.id === v ? null : {id: v, top: r.bottom + 6, left: Math.max(12, Math.min(r.left, innerWidth - 292))}; S.menu = null; },
+  noteclose: () => { S.note = null; },
+  img: v => { S.img = S.expenses.find(e => e.id === v).image_url; S.menu = null; },
+  imgclose: () => { S.img = null; },
+  edit: v => { const e = S.expenses.find(x => x.id === v), a = e.original_expense_amount ?? e.amount ?? ''; S.edit = {id: e.id, trip_id: e.trip_id, title: e.title || '', amount: a !== '' ? String(Math.abs(Number(a))) : '', currency: e.original_expense_currency || 'ILS', category: e.category || 'other', date: e.date || '', notes: e.notes || '', undated: !e.date, refund: Number(a) < 0, addCat: false, newCat: ''}; S.menu = null; },
+  editclose: () => { S.edit = null; },
+  delexp: v => { S.menu = null; delExp(v).catch(() => {}); },
+  flag: v => { const [k, f] = v.split('.'); S[k][f] = !S[k][f]; },
+  cal: v => { const f = S.add, d = new Date(f.y, f.m + Number(v), 1); f.y = d.getFullYear(); f.m = d.getMonth(); },
+  pick: v => { S.add.date = v; },
+  pickimg: () => $('a-file').click(),
+  rmimg: () => { S.add.image_url = ''; },
+  savecat: v => { const f = formOf(v), name = f.newCat.trim().replace(/\s+/g, ' '); if (!name) return; const t = S.trips.find(x => x.id === (v === 'edit' ? f.trip_id : planTrip().id)); f.category = 'custom_' + name; f.newCat = ''; f.addCat = false; if (t && !(t.customCategories || []).includes(name)) w(() => T().doc(t.id).update({customCategories: [...(t.customCategories || []), name]})).catch(() => {}); },
+  cancelcat: v => { formOf(v).addCat = false; },
+  addsave: () => { const f = S.add, t = planTrip(); if (!f.title || !f.amount) return; return busy('add', async () => { const s = f.refund ? -1 : 1, n = parseFloat(f.amount), ts = now(); await w(() => E().doc().set({trip_id: t.id, title: f.title, amount: s * conv(n, f.currency, t), original_expense_amount: s * n, original_expense_currency: f.currency, category: f.category, date: f.undated ? null : f.date, notes: f.notes, image_url: f.image_url, created_date: ts, updated_date: ts})); Object.assign(f, {title: '', amount: '', currency: t.currency || 'ILS', date: defDate(t), notes: '', image_url: '', undated: false, refund: false}); toast('ההוצאה נוספה'); }); },
+  editsave: () => { const f = S.edit, t = S.trips.find(x => x.id === f.trip_id); if (!f.title || !f.amount) return; return busy('edit', async () => { const s = f.refund ? -1 : 1, n = parseFloat(f.amount); await w(() => E().doc(f.id).update({title: f.title, amount: s * conv(n, f.currency, t), original_expense_amount: s * n, original_expense_currency: f.currency, category: f.category, date: f.undated ? null : (f.date || null), notes: f.notes, updated_date: now()})); S.edit = null; }); },
+  fab: () => { S.newTrip = S.newTrip ? null : blankTrip(); },
+  ntrates: () => { S.newTrip.ratesOpen = !S.newTrip.ratesOpen; },
+  clrdate: v => { S.newTrip[v] = ''; },
+  createtrip: () => { const n = S.newTrip; if (!n.name) return; return busy('trip', async () => { const ts = now(); await w(() => T().doc().set({name: n.name, destination: n.destination, start_date: n.start_date, end_date: n.end_date, budget: parseFloat(n.budget) || 0, currency: n.currency, status: 'active', rates: n.rates, customCategories: [], created_date: ts, updated_date: ts})); S.newTrip = null; }); },
+  showtrip: v => { setTrip(v); clearF(); go('dash'); },
+  cardclose: v => { delete S.card[v]; },
+  tm: v => {
+    const t = S.trips.find(x => x.id === S.menu.id); if (!t) { S.menu = null; return; }
+    if (v === 'status') { S.menu.status = true; return; } if (v === 'back') { S.menu.status = false; return; }
+    S.menu = null;
+    if (v === 'rename') S.card[t.id] = {mode: 'rename', name: t.name};
+    else if (v === 'rates') S.card[t.id] = {mode: 'rates', rates: ratesOf(t)};
+    else if (v === 'cur') S.card[t.id] = {mode: 'cur', currency: t.currency || 'ILS'};
+    else if (v === 'dates') S.card[t.id] = {mode: 'dates', start_date: t.start_date || '', end_date: t.end_date || ''};
+    else if (v === 'toggle') upTrip(t.id, {status: t.status === 'completed' ? 'active' : 'completed'}).catch(() => {});
+    else if (v === 'dup') (async () => { const {id, ...rest} = t, ts = now(), ref = T().doc(); await w(() => ref.set({...rest, name: `${t.name} (עותק)`, status: 'planned', created_date: ts, updated_date: ts})); for (const e of tripExp(t.id)) { const {id: _, ...r} = e; await w(() => E().doc().set({...r, trip_id: ref.id})); } })().catch(() => {});
+    else if (v === 'del') S.dialog = {title: 'מחיקת טיול', text: `האם למחוק את הטיול "${t.name}"? כל ההוצאות המשויכות אליו יימחקו גם הן.`, no: 'ביטול', yes: 'מחק', run: async () => { for (const e of tripExp(t.id)) await delExp(e.id); await w(() => T().doc(t.id).delete()); }};
+  },
+  renamesave: v => { const c = S.card[v], n = (c.name || '').trim(); delete S.card[v]; if (n) upTrip(v, {name: n}).catch(() => {}); },
+  savecur: v => { const c = S.card[v]; delete S.card[v]; upTrip(v, {currency: c.currency}).catch(() => {}); },
+  saverates: v => busy('r' + v, async () => { const c = S.card[v], rates = {...c.rates, ILS: 1}; await upTrip(v, {rates}); for (const e of tripExp(v)) if (e.original_expense_currency && e.original_expense_currency !== 'ILS' && e.original_expense_amount) { const amount = e.original_expense_amount * (rates[e.original_expense_currency] ?? 1); if (amount !== e.amount) await w(() => E().doc(e.id).update({amount})); } c.saved = true; setTimeout(() => { delete S.card[v]; rr(); }, 1200); }),
+  savedates: v => { const c = S.card[v], out = tripExp(v).filter(e => e.date && ((c.start_date && e.date < c.start_date) || (c.end_date && e.date > c.end_date))); const save = () => busy('d' + v, async () => { await upTrip(v, {start_date: c.start_date, end_date: c.end_date}); delete S.card[v]; }); if (out.length) S.dialog = {title: 'שינוי תאריכי טיול', text: 'ישנן הוצאות מחוץ לטווחי הטיול. האם אתה בטוח שברצונך לשנות את תאריכי הטיול?', no: 'לא', yes: 'כן, שנה ומחק', gold: true, run: async () => { for (const e of out) await delExp(e.id); await save(); }, cancel: () => { delete S.card[v]; }}; else return save(); },
+  dlgno: () => { const d = S.dialog; S.dialog = null; d.cancel && d.cancel(); },
+  dlgyes: () => { const d = S.dialog; S.dialog = null; d.run().catch(() => {}); },
+  remtoggle: () => { S.rem.open = !S.rem.open; },
+  remsw: () => { S.rem.enabled = !S.rem.enabled; },
+  remsave: () => busy('rem', async () => { const r = S.rem; await w(() => db.doc('settings/reminder').set({email: r.email, enabled: r.enabled, hour: r.hour, minute: r.minute})); r.saved = true; setTimeout(() => { r.saved = false; rr(); }, 2500); }),
+  askreset: () => { S.dialog = {title: 'איפוס כל הנתונים', text: 'פעולה זו תמחק את כל הטיולים וההוצאות. לא ניתן לשחזר את הנתונים לאחר המחיקה.', no: 'ביטול', yes: 'אפס נתונים', run: () => busy('reset', async () => { for (const e of [...S.expenses]) await delExp(e.id); for (const t of [...S.trips]) await w(() => T().doc(t.id).delete()); })}; },
+  pdf: () => busy('pdf', exportPdf)
+};
+
+document.addEventListener('click', ev => {
+  const el = ev.target.closest('[data-a]');
+  if (!el) { if (S.menu && !ev.target.closest('.menu')) { S.menu = null; rr(); } return; }
+  if (el.disabled) return;
+  const stop = ev.target.closest('[data-stop]');
+  if (stop && !stop.contains(el)) return;
+  if (S.menu && !el.closest('.menu') && !['emenu', 'tmenu'].includes(el.dataset.a)) S.menu = null;
+  const r = A[el.dataset.a](el.dataset.v, el);
+  if (!(r instanceof Promise)) rr();
+});
+function patch(k) {
+  const f = S[k]; if (!f) return;
+  if (k === 'add' || k === 'edit') { const p = k[0], t = k === 'add' ? planTrip() : S.trips.find(x => x.id === f.trip_id), hint = hintTxt(f, t), el = $(p + '-hint'); if (el) { el.hidden = !hint; el.textContent = hint + (k === 'add' && hint ? ' (לפי שער מוגדר)' : ''); } const b = $(p + '-save'); if (b) b.disabled = !f.title || !f.amount || !!S.busy[k]; }
+  if (k === 'newTrip') { const b = $('n-save'); if (b) b.disabled = !f.name; }
+  if (k === 'rem') { const b = $('rem-save'); if (b) b.disabled = !f.email; }
+}
+document.addEventListener('input', ev => {
+  const el = ev.target;
+  if (el.dataset.m) { const [k, f] = el.dataset.m.split('.'); if (S[k]) S[k][f] = el.value; if (el.tagName === 'TEXTAREA') { el.style.height = 'auto'; el.style.height = el.scrollHeight + 'px'; } if (el.dataset.r !== undefined) rr(); else patch(k); }
+  else if (el.dataset.rate) { const key = el.dataset.rate, r = key === '__new__' ? S.newTrip.rates : S.card[key].rates; r[el.dataset.v] = parseFloat(el.value) || 0; }
+  else if (el.dataset.card && el.tagName === 'INPUT' && el.type !== 'date') S.card[el.dataset.card][el.dataset.v] = el.value;
+});
+document.addEventListener('change', async ev => {
+  const el = ev.target, c = el.dataset.c;
+  if (c === 'trip') { setTrip(el.value); clearF(); S.fOpen = false; rr(); }
+  else if (c === 'cat') { const f = formOf(el.dataset.v); if (el.value === '__add__') f.addCat = true; else f.category = el.value; rr(); if (f.addCat) { const i = $(el.dataset.v + '-newcat'); i && i.focus(); } }
+  else if (c === 'ntdate') { const n = S.newTrip, k = el.dataset.v, v = el.value; if (k === 'start_date') { n.start_date = v; if (n.end_date && n.end_date < v) n.end_date = v; } else if (n.start_date && v && v < n.start_date) n.badEnd = true; else { n.badEnd = false; n.end_date = v; } rr(); }
+  else if (el.dataset.card) { const cd = S.card[el.dataset.card]; cd[el.dataset.v] = el.value; if (el.dataset.v === 'start_date' && cd.end_date && cd.end_date < el.value) cd.end_date = el.value; rr(); }
+  else if (el.id === 'a-file') { const file = el.files && el.files[0]; if (!file || !assets) return; S.busy.up = true; rr(); try { const r = await assets.upload(file); S.add.image_url = r.url || '/_blob/' + r.id; } catch (e) { toast('העלאת התמונה נכשלה'); } S.busy.up = false; el.value = ''; rr(); }
+});
+document.addEventListener('keydown', ev => {
+  const el = ev.target;
+  if (el.dataset && el.dataset.enter && (ev.key === 'Enter' || ev.key === 'Escape')) { ev.preventDefault(); if (ev.key === 'Enter') A[el.dataset.enter](el.dataset.enter === 'renamesave' ? el.dataset.card : el.dataset.v); else if (el.dataset.card) delete S.card[el.dataset.card]; else formOf(el.dataset.v).addCat = false; rr(); }
+  else if (ev.key === 'Escape' && (S.menu || S.note || S.img || S.edit)) { S.menu = S.note = S.img = S.edit = null; rr(); }
+});
+document.addEventListener('focusout', () => setTimeout(() => { if (dirty) render(); }, 0));
+let scT = {};
+document.addEventListener('scroll', ev => { const sc = ev.target; if (!sc.classList || !sc.classList.contains('sc')) { if (S.menu || S.note) { S.menu = S.note = null; rr(); } return; } const k = sc.dataset.k; clearTimeout(scT[k]); scT[k] = setTimeout(() => { const i = Math.max(0, Math.min(Math.round(sc.scrollTop / 40), sc.children.length - 1)); S.rem[k] = k === 'hour' ? i : [0, 15, 30, 45][i]; [...sc.children].forEach((c, j) => c.classList.toggle('on', j === i)); }, 120); }, true);
+
+/* ---------- PDF export ---------- */
+const load = src => new Promise((res, rej) => { const s = document.createElement('script'); s.src = src; s.onload = res; s.onerror = rej; document.head.appendChild(s); });
+const PIE = ['#0A1F44', '#C9A45B', '#4A7CA5', '#8B7355', '#2E8B57', '#8B4513', '#4682B4', '#DAA520'];
+async function exportPdf() {
+  const t = curTrip(), ex = tripExp(t.id), total = ex.reduce((s, e) => s + (e.amount || 0), 0);
+  try {
+    if (!window.html2canvas) await load('https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js');
+    if (!window.jspdf) await load('https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js');
+    const th = 'padding:8px 8px;color:#C9A45B;font-size:11px;text-align:right;font-weight:600;';
+    const range = t.start_date && t.end_date ? `${dmy(t.start_date)} - ${dmy(t.end_date)}` : dmy(t.start_date);
+    const rows = [...ex].sort((a, b) => a.date ? (b.date ? a.date.localeCompare(b.date) : -1) : 1).map((a, i) => { const bg = i % 2 === 0 ? '#F8F8F9' : '#FFFFFF', orig = a.original_expense_amount != null && a.original_expense_currency ? `<span style="white-space:nowrap;">${il(a.original_expense_amount)}&nbsp;${h(sym(a.original_expense_currency))}</span>` : '-'; return `<tr style="background:${bg};"><td style="padding:6px 8px;color:#33363D;font-size:11px;">${a.date ? dmy(a.date, 'yy') : '-'}</td><td style="padding:6px 8px;color:#33363D;font-size:11px;">${h(a.title)}</td><td style="padding:6px 8px;color:#50535A;font-size:11px;">${h(catInfo(a.category).label)}</td><td style="padding:6px 8px;font-size:11px;width:120px;direction:ltr;text-align:right;">${orig}</td><td style="padding:6px 8px;color:#0A1F44;font-weight:bold;font-size:11px;text-align:right;">₪${il(a.amount)}</td></tr>${a.notes ? `<tr style="background:${bg};"><td></td><td colspan="4" style="padding:1px 8px 6px;color:#888;font-size:10px;font-style:italic;white-space:pre-wrap;">${h(a.notes)}</td></tr>` : ''}`; }).join('');
+    const wrap = 'font-family:Arial,Helvetica,sans-serif;direction:rtl;width:794px;background:#fff;color:#33363D;';
+    const p1 = `<div style="${wrap}"><div style="background:#0A1F44;color:white;padding:18px 30px 14px;"><div style="font-size:20px;font-weight:bold;margin-bottom:4px;">${h(t.name || 'דוח הוצאות')}</div>${t.destination ? `<span style="font-size:12px;color:#C9A45B;">${h(t.destination)}</span>` : ''}${range ? `<span style="font-size:12px;color:#C9A45B;margin-right:12px;">${range}</span>` : ''}</div><div style="background:#F3F3F4;padding:8px 30px;border-bottom:2px solid #C9A45B;display:flex;justify-content:space-between;"><span style="font-size:12px;color:#50535A;">${ex.length} הוצאות</span><span style="font-size:14px;font-weight:bold;color:#0A1F44;">סה"כ: ₪${il(total)}</span></div><table style="width:100%;border-collapse:collapse;"><thead><tr style="background:#0A1F44;"><th style="${th}">תאריך</th><th style="${th}">תיאור</th><th style="${th}">קטגוריה</th><th style="${th}width:120px;">הוצאה מקורית</th><th style="${th}">סכום (₪)</th></tr></thead><tbody>${rows}</tbody></table><div style="padding:10px 30px;border-top:2px solid #C9A45B;border-bottom:2px solid #E8E8EA;"><span style="font-size:14px;font-weight:bold;color:#0A1F44;">סה"כ: ₪${il(total)}</span></div></div>`;
+    const by = Object.entries(ex.reduce((m, e) => (m[e.category] = (m[e.category] || 0) + (e.amount || 0), m), {})).sort((a, b) => b[1] - a[1]);
+    const cv = document.createElement('canvas'); cv.width = cv.height = 260; const g = cv.getContext('2d'); let ang = -Math.PI / 2;
+    by.forEach(([, v], i) => { if (v <= 0 || total <= 0) return; const a = v / total * 2 * Math.PI; g.beginPath(); g.moveTo(130, 130); g.arc(130, 130, 120, ang, ang + a); g.closePath(); g.fillStyle = PIE[i % 8]; g.fill(); g.strokeStyle = '#fff'; g.lineWidth = 2; g.stroke(); ang += a; });
+    const th2 = 'padding:7px 12px;color:#C9A45B;font-size:11px;font-weight:600;';
+    const p2 = `<div style="${wrap}"><div style="background:#0A1F44;padding:14px 30px;"><span style="font-size:16px;font-weight:bold;color:white;">סיכום לפי קטגוריה</span></div><div style="display:flex;align-items:center;gap:24px;padding:20px 30px;"><img src="${cv.toDataURL('image/png')}" width="200" height="200" style="flex-shrink:0;"><table style="flex:1;border-collapse:collapse;"><thead><tr style="background:#0A1F44;"><th style="${th2}text-align:right;">קטגוריה</th><th style="${th2}text-align:center;">אחוז</th><th style="${th2}text-align:left;">סכום</th></tr></thead><tbody>${by.map(([c, v], i) => `<tr><td style="padding:6px 12px;vertical-align:middle;"><div style="display:inline-block;width:12px;height:12px;background:${PIE[i % 8]};border-radius:3px;vertical-align:middle;margin-left:6px;"></div><span style="font-size:12px;color:#33363D;vertical-align:middle;">${h(catInfo(c).label)}</span></td><td style="padding:6px 12px;font-size:12px;color:#50535A;text-align:center;">${total > 0 ? (v / total * 100).toFixed(1) : '0'}%</td><td style="padding:6px 12px;font-size:12px;font-weight:bold;color:#0A1F44;text-align:left;">₪${il(v)}</td></tr>`).join('')}</tbody></table></div></div>`;
+    const shot = async html => { const d = document.createElement('div'); d.style.cssText = 'position:fixed;top:-9999px;left:-9999px;z-index:-1'; d.innerHTML = html; document.body.appendChild(d); const c = await html2canvas(d, {scale: 2, useCORS: true, backgroundColor: '#ffffff', width: 794}); d.remove(); return c; };
+    const pdf = new jspdf.jsPDF({orientation: 'portrait', unit: 'pt', format: 'a4'}), W = pdf.internal.pageSize.getWidth(), H = pdf.internal.pageSize.getHeight();
+    const put = (c, np) => { const ph = c.height * W / c.width, img = c.toDataURL('image/png'); let left = ph, y = 0; if (np) pdf.addPage(); pdf.addImage(img, 'PNG', 0, y, W, ph); left -= H; while (left > 0) { y -= H; pdf.addPage(); pdf.addImage(img, 'PNG', 0, y, W, ph); left -= H; } };
+    put(await shot(p1), false); put(await shot(p2), true);
+    await downloads.save({filename: `${(t.name || 'trip').replace(/\s+/g, '_')}_expenses.pdf`, data: pdf.output('blob')});
+  } catch (e) { if (!e || e.code !== 'declined') { console.error(e); toast('ייצוא ה-PDF נכשל'); } }
+}
+
+render();
+init();
+})();
+</script>
+
+</body></html>
