@@ -1,0 +1,4 @@
+# Static site, no build step. Netlify redeploys on every push to main.
+[build]
+  publish = "."
+  command = ""

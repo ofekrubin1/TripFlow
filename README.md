@@ -3,16 +3,22 @@
 Trip expense manager (Hebrew, RTL, mobile-first). A static site: no build step.
 
 - `index.html` — the whole app (UI, logic, PDF export).
-- `local-backend.js` — provides the `claude.use('db' | 'assets' | 'downloads')` API the app expects, backed by the browser's `localStorage`. Data is stored per browser/device.
+- `backend.js` — Firebase setup (Google sign-in + Firestore) behind the `claude.use('db' | 'assets' | 'downloads')` API the app expects.
+- `firestore.rules` — who may read/write. Paste into Firebase console → Firestore → Rules → Publish whenever it changes.
+- `netlify.toml` — Netlify deploy config.
+
+## Firebase
+
+Project `tripflow-db`. Data: collections `trips`, `expenses`, doc `settings/reminder`. Images are stored inline (compressed) in the expense doc.
+
+To give someone access: add their Google email to `firestore.rules` and publish the rules.
+
+When deploying to a new domain, add it in Firebase console → Authentication → Settings → Authorized domains, or Google sign-in fails.
 
 ## Run locally
 
-Open `index.html` in a browser, or serve the folder (e.g. `npx serve .`).
+Serve the folder over http (Google sign-in does not work from `file://`), e.g. `python -m http.server 8000`, then open http://localhost:8000.
 
 ## Deploy
 
-Any push to `main` redeploys automatically once the repo is connected.
-
-**Netlify:** Add new site → Import an existing project → GitHub → `TripFlow`. Build command: *(empty)*. Publish directory: `.`
-
-**Vercel:** Add New → Project → import `TripFlow`. Framework preset: *Other*. Build command: *(empty)*. Output directory: `.`
+Netlify is connected to this repo; every push to `main` redeploys.

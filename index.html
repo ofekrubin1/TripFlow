@@ -154,7 +154,10 @@ nav button.on svg{stroke-width:2}
   <input type="file" accept="image/*" id="a-file" hidden>
 </div>
 
-<script src="local-backend.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="backend.js"></script>
 <script>
 (() => {
 'use strict';
@@ -235,7 +238,7 @@ const planTrip = () => S.trips.find(t => t.id === S.tripId) || S.trips[0];
 const catOptions = t => { const set = new Set([...(t.customCategories || []), ...tripExp(t.id).map(e => e.category).filter(c => c && c.startsWith('custom_')).map(c => c.slice(7))]); return [...Object.entries(CATS).map(([k, v]) => [k, v.label]), ...[...set].map(c => ['custom_' + c, c])]; };
 
 /* ---------- data ---------- */
-async function w(fn) { try { return await fn(); } catch (e) { console.error(e); toast(e && e.code === 'invalid_argument' ? 'אין הרשאת כתיבה או שהנתונים לא תקינים' : 'השמירה נכשלה. נסה שוב.'); throw e; } }
+async function w(fn) { try { return await fn(); } catch (e) { console.error(e); toast(e && ['invalid_argument', 'invalid-argument', 'permission-denied'].includes(e.code) ? 'אין הרשאת כתיבה או שהנתונים לא תקינים' : 'השמירה נכשלה. נסה שוב.'); throw e; } }
 const T = () => db.collection('trips'), E = () => db.collection('expenses');
 const upTrip = (id, data) => w(() => T().doc(id).update({...data, updated_date: now()}));
 const delExp = id => w(() => E().doc(id).delete());
@@ -384,6 +387,7 @@ function vSettings() {
       <div class="between"><span class="lbl">הפעל תזכורות</span><div dir="ltr"><button class="sw ${r.enabled ? 'on' : ''}" data-a="remsw" role="switch" aria-checked="${r.enabled}" aria-label="הפעל תזכורות"></button></div></div>
       <button class="btn w100" id="rem-save" style="background:var(--navy);color:#fff;padding:10px;border-radius:10px" data-a="remsave" ${S.busy.rem || !r.email ? 'disabled' : ''}>${r.saved ? ic('check', 'stroke-width:2') + '<span>נשמר!</span>' : S.busy.rem ? 'שומר...' : 'שמור הגדרות תזכורת'}</button></div>` : ''}
   </div>
+  ${window.tripflowAuth && tripflowAuth.email() ? `<div class="card"><div class="between"><div class="grow"><h3 class="h3" style="color:var(--navy)">חשבון</h3><p class="sub trunc" style="font-size:12px;margin-top:4px;text-align:right" dir="ltr">${h(tripflowAuth.email())}</p></div><button class="btn secondary" style="padding:8px 16px;font-size:12px" data-a="signout">התנתק</button></div></div>` : ''}
   <div class="card"><div style="border-bottom:1px solid rgba(10,31,68,.1);padding-bottom:12px;margin-bottom:16px"><h3 class="h3" style="color:var(--navy)">אזור מתקדם</h3></div><button class="btn danger w100" data-a="askreset" ${S.busy.reset ? 'disabled' : ''}>${ic('trash')}<span>${S.busy.reset ? 'מאפס...' : 'איפוס כל הנתונים'}</span></button></div>`;
 }
 
@@ -474,6 +478,7 @@ const A = {
   remsw: () => { S.rem.enabled = !S.rem.enabled; },
   remsave: () => busy('rem', async () => { const r = S.rem; await w(() => db.doc('settings/reminder').set({email: r.email, enabled: r.enabled, hour: r.hour, minute: r.minute})); r.saved = true; setTimeout(() => { r.saved = false; rr(); }, 2500); }),
   askreset: () => { S.dialog = {title: 'איפוס כל הנתונים', text: 'פעולה זו תמחק את כל הטיולים וההוצאות. לא ניתן לשחזר את הנתונים לאחר המחיקה.', no: 'ביטול', yes: 'אפס נתונים', run: () => busy('reset', async () => { for (const e of [...S.expenses]) await delExp(e.id); for (const t of [...S.trips]) await w(() => T().doc(t.id).delete()); })}; },
+  signout: () => { window.tripflowAuth.signOut(); },
   pdf: () => busy('pdf', exportPdf)
 };
 
