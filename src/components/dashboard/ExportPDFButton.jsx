@@ -121,25 +121,31 @@ function addCanvas(pdf, canvas, pageW, pageH, newPage) {
   }
 }
 
-// Phones: open the share sheet (Save to Files, WhatsApp, Mail...). Elsewhere, or if sharing isn't allowed: download.
-async function deliver(blob, filename) {
-  const file = new File([blob], filename, { type: 'application/pdf' });
-  if (navigator.canShare?.({ files: [file] })) {
-    try {
-      await navigator.share({ files: [file], title: filename });
-      return;
-    } catch (err) {
-      if (err.name === 'AbortError') return; // user closed the share sheet
-    }
-  }
+// Opened synchronously in the tap handler: browsers block tabs opened later, after async work.
+function openViewerTab() {
+  const win = window.open('', '_blank');
+  if (!win) return null;
+  win.document.write('<!doctype html><html lang="he" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>TripFlow PDF</title></head>'
+    + '<body style="margin:0;height:100vh;display:flex;align-items:center;justify-content:center;font-family:Arial,sans-serif;color:#0A1F44;background:#F3F3F4">מכין את ה-PDF...</body></html>');
+  win.document.close();
+  return win;
+}
+
+// Shows the PDF in the browser's viewer (save/share from there); downloads if no tab could be opened.
+function deliver(blob, filename, win) {
   const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  if (win && !win.closed) {
+    win.location.href = url;
+  } else {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+  // The viewer tab needs the URL while it's open; free it later.
+  setTimeout(() => URL.revokeObjectURL(url), 10 * 60_000);
 }
 
 export default function ExportPDFButton({ trip, expenses }) {
@@ -147,6 +153,7 @@ export default function ExportPDFButton({ trip, expenses }) {
 
   const handleExport = async () => {
     setExporting(true);
+    const win = openViewerTab();
     try {
       // Loaded on demand so the PDF libraries don't slow down app start.
       const [{ default: html2canvas }, { jsPDF }] = await Promise.all([import('html2canvas'), import('jspdf')]);
@@ -157,9 +164,10 @@ export default function ExportPDFButton({ trip, expenses }) {
       const w = pdf.internal.pageSize.getWidth(), h = pdf.internal.pageSize.getHeight();
       addCanvas(pdf, page1, w, h, false);
       addCanvas(pdf, page2, w, h, true);
-      await deliver(pdf.output('blob'), `${(trip.name || 'trip').replace(/\s+/g, '_')}_expenses.pdf`);
+      deliver(pdf.output('blob'), `${(trip.name || 'trip').replace(/\s+/g, '_')}_expenses.pdf`, win);
     } catch (err) {
       console.error(err);
+      win?.close();
       alert('ייצוא ה-PDF נכשל');
     } finally {
       setExporting(false);
