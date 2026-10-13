@@ -1,14 +1,10 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Google accounts allowed to read and write all TripFlow data. Add emails here, then publish.
-    function allowed() {
-      return request.auth != null
-        && request.auth.token.email_verified == true
-        && request.auth.token.email in ['ofekrubin1996@gmail.com'];
-    }
-    match /{document=**} {
-      allow read, write: if allowed();
-    }
+    // No login (same as the original Base44 app): anyone with the site link can read and write.
+    // Only the app's own collections are open; everything else is denied.
+    match /trips/{id} { allow read, write: if true; }
+    match /expenses/{id} { allow read, write: if true; }
+    match /settings/{id} { allow read, write: if true; }
   }
 }

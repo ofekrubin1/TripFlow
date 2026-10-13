@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset="utf-8"><title>TripFlow</title><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!doctype html><html><head><meta charset="utf-8"><title>TripFlow</title><link rel="manifest" href="manifest.json"><link rel="icon" type="image/png" href="icons/icon-192.png"><link rel="apple-touch-icon" href="icons/icon-180.png"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="TripFlow"><meta name="apple-mobile-web-app-status-bar-style" content="default"><meta name="theme-color" content="#F3F3F4"><meta name=viewport content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
 <style>
 /* Layout: one phone-width column of white cards on a cool grey ground, fixed 4-tab bar at the bottom. Single light look, carried over from the original app. */
@@ -155,7 +155,6 @@ nav button.on svg{stroke-width:2}
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="backend.js"></script>
 <script>
@@ -250,8 +249,9 @@ async function init() {
   claude.use('downloads').then(d => { downloads = d; render(); });
   let got = 0; const first = () => { if (++got >= 2) { S.ready = true; } render(); };
   let f1 = false, f2 = false;
-  T().limit(1000).onSnapshot(s => { S.trips = s.docs.map(d => ({...d.data(), id: d.id})).sort((a, b) => (b.updated_date || '').localeCompare(a.updated_date || '')); if (!f1) { f1 = true; first(); } else render(); }, e => console.error(e));
-  E().limit(1000).onSnapshot(s => { S.expenses = s.docs.map(d => ({...d.data(), id: d.id})).sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')); if (!f2) { f2 = true; first(); } else render(); }, e => console.error(e));
+  const loadFail = e => { console.error(e); S.noDb = true; S.ready = true; rr(); };
+  T().limit(1000).onSnapshot(s => { S.trips = s.docs.map(d => ({...d.data(), id: d.id})).sort((a, b) => (b.updated_date || '').localeCompare(a.updated_date || '')); if (!f1) { f1 = true; first(); } else render(); }, loadFail);
+  E().limit(1000).onSnapshot(s => { S.expenses = s.docs.map(d => ({...d.data(), id: d.id})).sort((a, b) => (b.created_date || '').localeCompare(a.created_date || '')); if (!f2) { f2 = true; first(); } else render(); }, loadFail);
   db.doc('settings/reminder').onSnapshot(s => { if (s.exists && !S.rem.loaded) { const d = s.data(); const m = d.minute ?? 0; Object.assign(S.rem, {email: d.email || '', enabled: d.enabled !== false, hour: d.hour ?? 20, minute: [0,15,30,45].reduce((a, k) => Math.abs(k - m) < Math.abs(a - m) ? k : a), loaded: true}); render(); } }, () => {});
 }
 
@@ -270,7 +270,7 @@ function render() {
   document.querySelectorAll('textarea.in').forEach(t => { t.style.height = 'auto'; t.style.height = t.scrollHeight + 'px'; });
 }
 const rr = () => { render.force = true; render(); render.force = false; };
-const noDb = () => `<div class="center"><div class="tile">${ic('luggage')}</div><h2 class="big">לא ניתן לטעון את הנתונים</h2><p class="sub" style="font-size:14px;margin-top:4px">פתח את האפליקציה כשאתה מחובר לחשבון Claude שלך.</p></div>`;
+const noDb = () => `<div class="center"><div class="tile">${ic('luggage')}</div><h2 class="big">לא ניתן לטעון את הנתונים</h2><p class="sub" style="font-size:14px;margin-top:4px">בדוק את החיבור לאינטרנט ונסה שוב.</p></div>`;
 const head = (e, t) => `<div><p class="eyebrow">${e}</p><h1>${t}</h1></div>`;
 const tripSelect = t => `<select class="in" id="tripsel" data-c="trip">${S.trips.map(x => `<option value="${x.id}" ${t && x.id === t.id ? 'selected' : ''}>${h(x.name)}</option>`).join('')}</select>`;
 const noTrips = (msg, btn) => `<div class="center"><div class="tile">${ic('luggage')}</div><h2 class="big" style="margin-bottom:4px">אין טיולים עדיין</h2><p class="sub" style="font-size:14px;margin-bottom:24px">${msg}</p>${btn ? `<button class="btn primary" data-a="tab" data-v="trips">${ic('plus')}<span>צור טיול חדש</span></button>` : ''}</div>`;
@@ -387,7 +387,6 @@ function vSettings() {
       <div class="between"><span class="lbl">הפעל תזכורות</span><div dir="ltr"><button class="sw ${r.enabled ? 'on' : ''}" data-a="remsw" role="switch" aria-checked="${r.enabled}" aria-label="הפעל תזכורות"></button></div></div>
       <button class="btn w100" id="rem-save" style="background:var(--navy);color:#fff;padding:10px;border-radius:10px" data-a="remsave" ${S.busy.rem || !r.email ? 'disabled' : ''}>${r.saved ? ic('check', 'stroke-width:2') + '<span>נשמר!</span>' : S.busy.rem ? 'שומר...' : 'שמור הגדרות תזכורת'}</button></div>` : ''}
   </div>
-  ${window.tripflowAuth && tripflowAuth.email() ? `<div class="card"><div class="between"><div class="grow"><h3 class="h3" style="color:var(--navy)">חשבון</h3><p class="sub trunc" style="font-size:12px;margin-top:4px;text-align:right" dir="ltr">${h(tripflowAuth.email())}</p></div><button class="btn secondary" style="padding:8px 16px;font-size:12px" data-a="signout">התנתק</button></div></div>` : ''}
   <div class="card"><div style="border-bottom:1px solid rgba(10,31,68,.1);padding-bottom:12px;margin-bottom:16px"><h3 class="h3" style="color:var(--navy)">אזור מתקדם</h3></div><button class="btn danger w100" data-a="askreset" ${S.busy.reset ? 'disabled' : ''}>${ic('trash')}<span>${S.busy.reset ? 'מאפס...' : 'איפוס כל הנתונים'}</span></button></div>`;
 }
 
@@ -478,7 +477,6 @@ const A = {
   remsw: () => { S.rem.enabled = !S.rem.enabled; },
   remsave: () => busy('rem', async () => { const r = S.rem; await w(() => db.doc('settings/reminder').set({email: r.email, enabled: r.enabled, hour: r.hour, minute: r.minute})); r.saved = true; setTimeout(() => { r.saved = false; rr(); }, 2500); }),
   askreset: () => { S.dialog = {title: 'איפוס כל הנתונים', text: 'פעולה זו תמחק את כל הטיולים וההוצאות. לא ניתן לשחזר את הנתונים לאחר המחיקה.', no: 'ביטול', yes: 'אפס נתונים', run: () => busy('reset', async () => { for (const e of [...S.expenses]) await delExp(e.id); for (const t of [...S.trips]) await w(() => T().doc(t.id).delete()); })}; },
-  signout: () => { window.tripflowAuth.signOut(); },
   pdf: () => busy('pdf', exportPdf)
 };
 
