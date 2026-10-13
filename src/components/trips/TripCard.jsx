@@ -198,14 +198,6 @@ export default function TripCard({ trip, expenses, totalExpenses, onDuplicate, o
                 <span className={`text-[9px] font-medium px-2 py-0.5 rounded-full flex-shrink-0 ${STATUS_STYLES[trip.status] || STATUS_STYLES.planned}`}>
                   {STATUS_LABELS[trip.status] || 'מתוכנן'}
                 </span>
-                {onTripClick && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); onTripClick(trip.id); }}
-                    className="text-[9px] font-medium px-2 py-0.5 rounded-full flex-shrink-0 bg-[#C9A45B]/15 text-[#C9A45B] hover:bg-[#C9A45B]/25 transition-colors"
-                  >
-                    הצג טיול
-                  </button>
-                )}
               </>
             )}
           </div>
