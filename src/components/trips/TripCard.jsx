@@ -42,11 +42,15 @@ export default function TripCard({ trip, expenses, totalExpenses, onDuplicate, o
   const [confirmDates, setConfirmDates] = useState(false);
   const btnRef = useRef(null);
   const menuRef = useRef(null);
+  // A tap that only dismisses the open menu shouldn't also open the trip.
+  const dismissingMenu = useRef(false);
 
   useEffect(() => {
     if (!menuOpen) return;
     const close = (e) => {
       if (menuRef.current?.contains(e.target) || btnRef.current?.contains(e.target)) return;
+      dismissingMenu.current = true;
+      setTimeout(() => { dismissingMenu.current = false; }, 400);
       setMenuOpen(false); setStatusMenu(false);
     };
     const startY = window.scrollY;
@@ -95,6 +99,13 @@ export default function TripCard({ trip, expenses, totalExpenses, onDuplicate, o
       setSavingDates(false);
     }
   };
+
+  // Tapping the card opens the trip on the dashboard, unless the card is busy with an edit, menu or dialog.
+  // (Dialogs and menus are portals, but their clicks still bubble here through React.)
+  const busy = renaming || menuOpen || showRates || showCurrency || showDates || confirmDelete || confirmDates;
+  const openTrip = onTripClick && !busy
+    ? () => { if (!dismissingMenu.current) onTripClick(trip.id); }
+    : undefined;
 
   const otherStatuses = ['active', 'completed'].filter((s) => s !== trip.status);
 
@@ -158,7 +169,7 @@ export default function TripCard({ trip, expenses, totalExpenses, onDuplicate, o
   );
 
   return (
-    <PremiumCard goldAccent className="transition-transform duration-150">
+    <PremiumCard goldAccent className="transition-transform duration-150" onClick={openTrip}>
       <div className="flex items-start justify-between gap-2">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
