@@ -103,19 +103,43 @@ async function renderToCanvas(html2canvas, html) {
   }
 }
 
+// Cuts the rendered canvas into page-height slices, each embedded once as JPEG.
+// (Embedding the whole PNG on every page made long trips 30MB+, which phones fail to save.)
 function addCanvas(pdf, canvas, pageW, pageH, newPage) {
-  const imgH = (canvas.height * pageW) / canvas.width;
-  const img = canvas.toDataURL('image/png');
-  let left = imgH, y = 0;
-  if (newPage) pdf.addPage();
-  pdf.addImage(img, 'PNG', 0, y, pageW, imgH);
-  left -= pageH;
-  while (left > 0) {
-    y -= pageH;
-    pdf.addPage();
-    pdf.addImage(img, 'PNG', 0, y, pageW, imgH);
-    left -= pageH;
+  const slicePx = Math.floor((pageH * canvas.width) / pageW);
+  for (let top = 0, first = true; top < canvas.height; top += slicePx, first = false) {
+    const h = Math.min(slicePx, canvas.height - top);
+    const slice = document.createElement('canvas');
+    slice.width = canvas.width;
+    slice.height = h;
+    const ctx = slice.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, slice.width, h);
+    ctx.drawImage(canvas, 0, top, canvas.width, h, 0, 0, canvas.width, h);
+    if (newPage || !first) pdf.addPage();
+    pdf.addImage(slice.toDataURL('image/jpeg', 0.85), 'JPEG', 0, 0, pageW, (h * pageW) / canvas.width);
   }
+}
+
+// Phones: open the share sheet (Save to Files, WhatsApp, Mail...). Elsewhere, or if sharing isn't allowed: download.
+async function deliver(blob, filename) {
+  const file = new File([blob], filename, { type: 'application/pdf' });
+  if (navigator.canShare?.({ files: [file] })) {
+    try {
+      await navigator.share({ files: [file], title: filename });
+      return;
+    } catch (err) {
+      if (err.name === 'AbortError') return; // user closed the share sheet
+    }
+  }
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
 export default function ExportPDFButton({ trip, expenses }) {
@@ -133,7 +157,7 @@ export default function ExportPDFButton({ trip, expenses }) {
       const w = pdf.internal.pageSize.getWidth(), h = pdf.internal.pageSize.getHeight();
       addCanvas(pdf, page1, w, h, false);
       addCanvas(pdf, page2, w, h, true);
-      pdf.save(`${(trip.name || 'trip').replace(/\s+/g, '_')}_expenses.pdf`);
+      await deliver(pdf.output('blob'), `${(trip.name || 'trip').replace(/\s+/g, '_')}_expenses.pdf`);
     } catch (err) {
       console.error(err);
       alert('ייצוא ה-PDF נכשל');
