@@ -1,0 +1,16 @@
+export const CURRENCIES = [
+  { code: 'ILS', symbol: '₪', label: 'שקל' },
+  { code: 'USD', symbol: '$', label: 'דולר' },
+  { code: 'EUR', symbol: '€', label: 'יורו' },
+  { code: 'THB', symbol: '฿', label: 'באט תאילנדי' },
+];
+
+export const DEFAULT_RATES = { ILS: 1, USD: 3.7, EUR: 4, THB: 0.1 };
+
+export const currencySymbol = (code) =>
+  ({ ILS: '₪', USD: '$', EUR: '€', THB: '฿', GBP: '£', JPY: '¥' }[code] || code);
+
+// Rates live on the trip document (Base44 kept them in each browser's localStorage, so devices disagreed).
+export const getRates = (trip) => ({ ...DEFAULT_RATES, ...(trip?.rates || {}) });
+
+export const convertToILS = (amount, currency, trip) => amount * (getRates(trip)[currency] ?? 1);

@@ -5,6 +5,6 @@ service cloud.firestore {
     // Only the app's own collections are open; everything else is denied.
     match /trips/{id} { allow read, write: if true; }
     match /expenses/{id} { allow read, write: if true; }
-    match /settings/{id} { allow read, write: if true; }
+    match /reminder_settings/{id} { allow read, write: if true; }
   }
 }

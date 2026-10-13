@@ -1,27 +1,49 @@
 # TripFlow
 
-Trip expense manager (Hebrew, RTL, mobile-first). Port of the Base44 app at https://trip-flow-pro-app.base44.app. A static site: no build step.
+Trip expense manager (Hebrew, RTL, mobile-first). Rebuild of the Base44 app at https://trip-flow-pro-app.base44.app with the same structure and design, running on Firebase + Netlify.
 
-- `index.html` — the whole app: dashboard, add expense, trips, settings, PDF export.
-- `backend.js` — Firebase Firestore behind the `claude.use('db' | 'assets' | 'downloads')` API the app expects.
-- `firestore.rules` — database access rules. Paste into Firebase console → Firestore → Rules → Publish whenever it changes.
-- `manifest.json`, `icons/` — lets phones install it to the home screen.
-- `netlify.toml` — Netlify deploy config.
+## Stack
+
+React 18 + Vite, Tailwind CSS, TanStack Query, Radix UI (select, alert dialog), lucide icons, date-fns. Data in Firebase Firestore.
+
+```
+src/
+  api/          firebase.js (config), base44Client.js (Base44-style entities API over Firestore)
+  components/
+    ui/         PremiumCard, PremiumButton, PremiumInput, select, alert-dialog
+    layout/     Layout, BottomNav
+    dashboard/  TripSummaryCard, CategoryItem, ExpenseItem, EditExpenseModal, ExportPDFButton
+    plan/       AddExpenseForm, TripCalendar
+    trips/      TripCard, NewTripForm, CurrencyRatesEditor, DateInput
+    settings/   TimeWheel
+  hooks/        useCustomCategories
+  lib/          currency, utils
+  pages/        Dashboard (/), TripPlan (/plan), PastTrips (/trips), SettingsPage (/settings)
+```
+
+## Differences from the Base44 version
+
+- Exchange rates and custom categories are stored on the trip in the database (Base44 kept them in each browser, so phones and computers disagreed).
+- Live sync: changes on one device show up on the others without refreshing.
+- Trip delete, reset, rate recalculation and duplicate use batched writes.
+- Works offline from the local cache.
+- No login, same as Base44 (`public_without_login`): anyone with the link shares the same data.
+- Daily email reminder: settings are saved, sending is not implemented yet.
 
 ## Data
 
-Firebase project `tripflow-db`. Collections `trips`, `expenses`, doc `settings/reminder`. Images are compressed and stored inline in the expense doc.
+Firebase project `tripflow-db`. Collections: `trips`, `expenses`, `reminder_settings`. Images are compressed and stored inline in the expense.
 
-No login, same as the Base44 app (`public_without_login`): everyone with the link shares the same data.
+`firestore.rules` holds the access rules. Paste into Firebase console → Firestore → Rules → Publish whenever it changes.
 
-## Run locally
+## Develop
 
-Serve the folder over http, e.g. `python -m http.server 8000`, then open http://localhost:8000.
+```
+npm install
+npm run dev      # http://localhost:5173
+npm run build    # outputs dist/
+```
 
 ## Deploy
 
-Netlify is connected to this repo; every push to `main` redeploys.
-
-## Install on a phone
-
-Open the site → iPhone: Share → Add to Home Screen. Android: menu → Install app.
+Netlify builds from `netlify.toml` (`npm run build`, publish `dist`). Every push to `main` redeploys.

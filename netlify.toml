@@ -1,4 +1,13 @@
-# Static site, no build step. Netlify redeploys on every push to main.
+# Netlify builds and redeploys on every push to main.
 [build]
-  publish = "."
-  command = ""
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# Single-page app: let the client router handle /plan, /trips, /settings.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
