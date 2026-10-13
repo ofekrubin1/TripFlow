@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { X, Check, Calendar, Plus } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { api } from '@/api/client';
 import { CURRENCIES, convertToILS } from '@/lib/currency';
 import { useCustomCategories } from '@/hooks/useCustomCategories';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -45,7 +45,7 @@ export default function EditExpenseModal({ expense, trip, onClose, onSaved }) {
     setSaving(true);
     const sign = isRefund ? -1 : 1;
     try {
-      await base44.entities.Expense.update(expense.id, {
+      await api.entities.Expense.update(expense.id, {
         title: form.title,
         amount: sign * convertToILS(parseFloat(form.amount), form.currency, trip),
         original_expense_amount: sign * parseFloat(form.amount),

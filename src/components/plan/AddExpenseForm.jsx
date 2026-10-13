@@ -1,7 +1,7 @@
 import { useRef, useState } from 'react';
 import { parseISO } from 'date-fns';
 import { Receipt, Plus, X, ImagePlus, LoaderCircle } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { api } from '@/api/client';
 import { CURRENCIES, convertToILS } from '@/lib/currency';
 import { useCustomCategories } from '@/hooks/useCustomCategories';
 import PremiumCard from '../ui/PremiumCard';
@@ -80,7 +80,7 @@ export default function AddExpenseForm({ trip, onSave }) {
     if (!file) return;
     setUploading(true);
     try {
-      const { file_url } = await base44.integrations.Core.UploadFile({ file });
+      const { file_url } = await api.integrations.Core.UploadFile({ file });
       setForm((f) => ({ ...f, image_url: file_url }));
     } catch {
       alert('העלאת התמונה נכשלה');

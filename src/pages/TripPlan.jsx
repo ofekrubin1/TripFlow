@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Wallet } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { api } from '@/api/client';
 import Spinner from '../components/ui/Spinner';
 import AddExpenseForm from '../components/plan/AddExpenseForm';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -15,13 +15,13 @@ export default function TripPlan() {
 
   const { data: trips = [], isLoading } = useQuery({
     queryKey: ['trips'],
-    queryFn: () => base44.entities.Trip.list('-updated_date'),
+    queryFn: () => api.entities.Trip.list('-updated_date'),
   });
 
   const trip = (selectedTripId && trips.find((t) => t.id === selectedTripId)) || trips[0];
 
   const createExpense = useMutation({
-    mutationFn: (data) => base44.entities.Expense.create(data),
+    mutationFn: (data) => api.entities.Expense.create(data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expenses'] }),
   });
 

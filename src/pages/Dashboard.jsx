@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Plus, Wallet, Filter, X } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { api } from '@/api/client';
 import PremiumCard from '../components/ui/PremiumCard';
 import PremiumButton from '../components/ui/PremiumButton';
 import Spinner from '../components/ui/Spinner';
@@ -34,7 +34,7 @@ export default function Dashboard() {
 
   const { data: trips = [], isLoading: tripsLoading } = useQuery({
     queryKey: ['trips'],
-    queryFn: () => base44.entities.Trip.list('-updated_date'),
+    queryFn: () => api.entities.Trip.list('-updated_date'),
   });
 
   const activeTrip = (selectedTripId && trips.find((t) => t.id === selectedTripId))
@@ -43,12 +43,12 @@ export default function Dashboard() {
 
   const { data: expenses = [], isLoading: expensesLoading } = useQuery({
     queryKey: ['expenses', activeTrip?.id],
-    queryFn: () => base44.entities.Expense.filter({ trip_id: activeTrip.id }, '-created_date'),
+    queryFn: () => api.entities.Expense.filter({ trip_id: activeTrip.id }, '-created_date'),
     enabled: !!activeTrip?.id,
   });
 
   const deleteExpense = useMutation({
-    mutationFn: (id) => base44.entities.Expense.delete(id),
+    mutationFn: (id) => api.entities.Expense.delete(id),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['expenses'] }),
   });
 

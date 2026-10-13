@@ -11,3 +11,8 @@
   from = "/*"
   to = "/index.html"
   status = 200
+
+# Server functions: daily email reminder (scheduled) and the Settings "send test email" button.
+[functions]
+  directory = "netlify/functions"
+  node_bundler = "esbuild"

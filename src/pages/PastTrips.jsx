@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { FolderArchive, Plus, X } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { api } from '@/api/client';
 import { DEFAULT_RATES } from '@/lib/currency';
 import Spinner from '../components/ui/Spinner';
 import TripCard from '../components/trips/TripCard';
@@ -19,11 +19,11 @@ export default function PastTrips() {
 
   const { data: trips = [], isLoading } = useQuery({
     queryKey: ['trips'],
-    queryFn: () => base44.entities.Trip.list('-updated_date'),
+    queryFn: () => api.entities.Trip.list('-updated_date'),
   });
   const { data: allExpenses = [] } = useQuery({
     queryKey: ['allExpenses'],
-    queryFn: () => base44.entities.Expense.list('-created_date'),
+    queryFn: () => api.entities.Expense.list('-created_date'),
   });
 
   const refresh = () => {
@@ -33,19 +33,19 @@ export default function PastTrips() {
   };
 
   const createTrip = useMutation({
-    mutationFn: (data) => base44.entities.Trip.create({ ...data, status: 'active', customCategories: [] }),
+    mutationFn: (data) => api.entities.Trip.create({ ...data, status: 'active', customCategories: [] }),
     onSuccess: () => { refresh(); setShowNew(false); setTripData(emptyTrip()); },
   });
 
   const updateTrip = useMutation({
-    mutationFn: ({ id, data }) => base44.entities.Trip.update(id, data),
+    mutationFn: ({ id, data }) => api.entities.Trip.update(id, data),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['trips'] }),
   });
 
   const deleteTrip = useMutation({
     mutationFn: async (id) => {
-      await base44.entities.Expense.bulkDelete(allExpenses.filter((e) => e.trip_id === id).map((e) => e.id));
-      await base44.entities.Trip.delete(id);
+      await api.entities.Expense.bulkDelete(allExpenses.filter((e) => e.trip_id === id).map((e) => e.id));
+      await api.entities.Trip.delete(id);
     },
     onSuccess: refresh,
   });
@@ -53,11 +53,11 @@ export default function PastTrips() {
   const duplicateTrip = useMutation({
     mutationFn: async (trip) => {
       const { id, created_date, updated_date, ...rest } = trip;
-      const copy = await base44.entities.Trip.create({ ...rest, name: `${rest.name} (עותק)`, status: 'planned' });
+      const copy = await api.entities.Trip.create({ ...rest, name: `${rest.name} (עותק)`, status: 'planned' });
       const expenses = allExpenses
         .filter((e) => e.trip_id === id)
         .map(({ id: _id, created_date: _c, updated_date: _u, ...e }) => ({ ...e, trip_id: copy.id }));
-      if (expenses.length) await base44.entities.Expense.bulkCreate(expenses);
+      if (expenses.length) await api.entities.Expense.bulkCreate(expenses);
       return copy;
     },
     onSuccess: refresh,

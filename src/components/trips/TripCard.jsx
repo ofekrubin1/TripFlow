@@ -5,7 +5,7 @@ import {
   MapPin, Calendar, Check, X, EllipsisVertical, Pencil, RotateCcw, CircleCheck, DollarSign,
   CreditCard, CalendarRange, Copy, Trash2,
 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { api } from '@/api/client';
 import { CURRENCIES } from '@/lib/currency';
 import PremiumCard from '../ui/PremiumCard';
 import CurrencyRatesEditor from './CurrencyRatesEditor';
@@ -86,7 +86,7 @@ export default function TripCard({ trip, expenses, totalExpenses, onDuplicate, o
     setSavingDates(true);
     try {
       if (removeOutOfRange) {
-        await base44.entities.Expense.bulkDelete(outOfRange().map((e) => e.id));
+        await api.entities.Expense.bulkDelete(outOfRange().map((e) => e.id));
         onExpensesUpdated?.();
       }
       await onUpdate(trip.id, dates);

@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Check, RefreshCw } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { api } from '@/api/client';
 import { CURRENCIES, getRates } from '@/lib/currency';
 import PremiumButton from '../ui/PremiumButton';
 
@@ -45,13 +45,13 @@ export default function CurrencyRatesEditor({ trip, rates: controlledRates, onCh
     setSaving(true);
     try {
       const newRates = { ...rates, ILS: 1 };
-      await base44.entities.Trip.update(trip.id, { rates: newRates });
-      const expenses = await base44.entities.Expense.filter({ trip_id: trip.id });
+      await api.entities.Trip.update(trip.id, { rates: newRates });
+      const expenses = await api.entities.Expense.filter({ trip_id: trip.id });
       const changes = expenses
         .filter((e) => e.original_expense_currency && e.original_expense_currency !== 'ILS' && e.original_expense_amount)
         .map((e) => ({ id: e.id, data: { amount: e.original_expense_amount * (newRates[e.original_expense_currency] ?? 1) } }))
         .filter((c, i, all) => c.data.amount !== expenses.find((e) => e.id === c.id).amount);
-      if (changes.length) await base44.entities.Expense.bulkUpdate(changes);
+      if (changes.length) await api.entities.Expense.bulkUpdate(changes);
       onSaved?.();
       setSaved(true);
       setTimeout(() => { setSaved(false); onClose?.(); }, 1200);

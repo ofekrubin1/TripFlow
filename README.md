@@ -8,7 +8,7 @@ React 18 + Vite, Tailwind CSS, TanStack Query, Radix UI (select, alert dialog), 
 
 ```
 src/
-  api/          firebase.js (config), base44Client.js (Base44-style entities API over Firestore)
+  api/          client.js (data layer: api.entities.Trip/Expense/ReminderSettings over Firestore), firebase.js, firebaseConfig.js
   components/
     ui/         PremiumCard, PremiumButton, PremiumInput, select, alert-dialog
     layout/     Layout, BottomNav
@@ -28,13 +28,22 @@ src/
 - Trip delete, reset, rate recalculation and duplicate use batched writes.
 - Works offline from the local cache.
 - No login, same as Base44 (`public_without_login`): anyone with the link shares the same data.
-- Daily email reminder: settings are saved, sending is not implemented yet.
 
 ## Data
 
 Firebase project `tripflow-2026`. Collections: `trips`, `expenses`, `reminder_settings`. Images are compressed and stored inline in the expense.
 
 `firestore.rules` holds the access rules. Paste into Firebase console → Firestore → Rules → Publish whenever it changes.
+
+## Daily email reminder
+
+`netlify/functions/daily-reminder.mjs` runs every 15 minutes. Once a day, at the time set in Settings (Israel time), it emails the saved address a summary of today's expenses for each active trip, only on days inside an active trip's dates. `netlify/functions/send-test-reminder.mjs` backs the "שלח מייל בדיקה" button.
+
+Email is sent through Gmail. Netlify environment variables (Project configuration → Environment variables):
+
+- `GMAIL_USER`: the Gmail address that sends the reminders
+- `GMAIL_APP_PASSWORD`: a Google app password for that account (myaccount.google.com/apppasswords)
+- `REMINDER_TZ` (optional): time zone, default `Asia/Jerusalem`
 
 ## Develop
 

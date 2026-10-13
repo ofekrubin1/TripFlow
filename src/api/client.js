@@ -1,5 +1,5 @@
-// Drop-in replacement for the Base44 SDK surface this app uses (entities + UploadFile),
-// backed by Firestore. Keeps page code identical to the original Base44 app.
+// Data layer: the one place the app talks to the database. Pages call api.entities.Trip.list(),
+// api.entities.Expense.create(), etc. (same shape as the Base44 SDK the app was built on), backed by Firestore.
 import {
   collection, doc, getDocs, getDoc, addDoc, updateDoc, deleteDoc, query, where,
   writeBatch, onSnapshot,
@@ -97,7 +97,7 @@ function compressImage(file, maxSide = 1024, quality = 0.7) {
   });
 }
 
-export const base44 = {
+export const api = {
   entities: {
     Trip: entity('trips'),
     Expense: entity('expenses'),

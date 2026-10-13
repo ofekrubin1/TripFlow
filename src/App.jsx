@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
-import { base44 } from '@/api/base44Client';
+import { api } from '@/api/client';
 import Layout from '@/components/layout/Layout';
 import Dashboard from '@/pages/Dashboard';
 import TripPlan from '@/pages/TripPlan';
@@ -17,8 +17,8 @@ function LiveSync() {
   const qc = useQueryClient();
   useEffect(() => {
     const unsubs = [
-      base44.entities.Trip.subscribe(() => qc.invalidateQueries({ queryKey: ['trips'] })),
-      base44.entities.Expense.subscribe(() => {
+      api.entities.Trip.subscribe(() => qc.invalidateQueries({ queryKey: ['trips'] })),
+      api.entities.Expense.subscribe(() => {
         qc.invalidateQueries({ queryKey: ['expenses'] });
         qc.invalidateQueries({ queryKey: ['allExpenses'] });
       }),

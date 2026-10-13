@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
-import { Info, Bell, ChevronDown, Check, Trash2 } from 'lucide-react';
-import { base44 } from '@/api/base44Client';
+import { Info, Bell, ChevronDown, Check, Trash2, Send } from 'lucide-react';
+import { api } from '@/api/client';
 import PremiumCard from '../components/ui/PremiumCard';
 import PremiumButton from '../components/ui/PremiumButton';
 import TimeWheel from '../components/settings/TimeWheel';
@@ -24,9 +24,10 @@ export default function SettingsPage() {
   const [settingsId, setSettingsId] = useState(null);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [testState, setTestState] = useState({ status: 'idle', message: '' });
 
   useEffect(() => {
-    base44.entities.ReminderSettings.list('-created_date', 1).then((list) => {
+    api.entities.ReminderSettings.list('-created_date', 1).then((list) => {
       if (!list.length) return;
       const s = list[0];
       setEmail(s.email || '');
@@ -43,8 +44,8 @@ export default function SettingsPage() {
     setSaving(true);
     try {
       const data = { email, enabled, hour, minute };
-      if (settingsId) await base44.entities.ReminderSettings.update(settingsId, data);
-      else setSettingsId((await base44.entities.ReminderSettings.create(data)).id);
+      if (settingsId) await api.entities.ReminderSettings.update(settingsId, data);
+      else setSettingsId((await api.entities.ReminderSettings.create(data)).id);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } finally {
@@ -52,12 +53,29 @@ export default function SettingsPage() {
     }
   };
 
+  const TEST_ERRORS = {
+    no_email: 'שמור קודם כתובת אימייל.',
+    too_soon: 'נשלח מייל בדיקה לפני רגע. נסה שוב בעוד דקה.',
+  };
+
+  const sendTest = async () => {
+    setTestState({ status: 'sending', message: '' });
+    try {
+      const res = await fetch('/api/send-test-reminder', { method: 'POST' });
+      const body = await res.json().catch(() => ({}));
+      if (res.ok && body.ok) setTestState({ status: 'ok', message: `נשלח מייל בדיקה אל ${body.to}` });
+      else setTestState({ status: 'error', message: TEST_ERRORS[body.error] || `השליחה נכשלה: ${body.error || res.status}` });
+    } catch {
+      setTestState({ status: 'error', message: 'השליחה נכשלה. בדוק את החיבור לאינטרנט.' });
+    }
+  };
+
   const resetAll = async () => {
     setResetting(true);
     try {
-      const [expenses, trips] = await Promise.all([base44.entities.Expense.list(), base44.entities.Trip.list()]);
-      await base44.entities.Expense.bulkDelete(expenses.map((e) => e.id));
-      await base44.entities.Trip.bulkDelete(trips.map((t) => t.id));
+      const [expenses, trips] = await Promise.all([api.entities.Expense.list(), api.entities.Trip.list()]);
+      await api.entities.Expense.bulkDelete(expenses.map((e) => e.id));
+      await api.entities.Trip.bulkDelete(trips.map((t) => t.id));
       localStorage.removeItem('lastSelectedTripId');
       queryClient.invalidateQueries();
     } finally {
@@ -98,7 +116,7 @@ export default function SettingsPage() {
           <div className="mt-4 border-t border-[#0A1F44]/10 pt-4 space-y-4">
             <div className="space-y-0">
               <p className="text-xs font-light text-[#50535A]/60 leading-relaxed">תזכורת תישלח למייל בשעה שהוגדרה — רק בימים שנמצאים בטווח טיול פעיל.</p>
-              <p className="text-[11px] text-[#C9A45B]/80 px-3 py-2 leading-relaxed">⚠️ שליחת המייל עדיין לא מחוברת בגרסה הזו. ההגדרות נשמרות בלבד.</p>
+              <p className="text-[11px] text-[#C9A45B]/80 px-3 py-2 leading-relaxed">⚠️ שים לב, עדכון השעה יכול לקחת כמה דקות.</p>
             </div>
             <div className="space-y-1.5">
               <label className="text-xs font-medium text-[#50535A] tracking-wide">כתובת אימייל</label>
@@ -140,6 +158,17 @@ export default function SettingsPage() {
             >
               {saved ? (<><Check className="w-4 h-4" strokeWidth={2} /><span>נשמר!</span></>) : saving ? 'שומר...' : 'שמור הגדרות תזכורת'}
             </button>
+            <button
+              onClick={sendTest}
+              disabled={!settingsId || testState.status === 'sending'}
+              className="w-full flex items-center justify-center gap-2 py-2.5 rounded-[10px] bg-white text-[#0A1F44] border border-[#C9A45B]/40 text-sm font-medium disabled:opacity-50"
+            >
+              <Send className="w-4 h-4" strokeWidth={1.5} />
+              {testState.status === 'sending' ? 'שולח...' : 'שלח מייל בדיקה'}
+            </button>
+            {testState.message && (
+              <p className={`text-[11px] text-center leading-relaxed ${testState.status === 'ok' ? 'text-[#2E8B57]' : 'text-[#c0392b]'}`}>{testState.message}</p>
+            )}
           </div>
         )}
       </PremiumCard>
