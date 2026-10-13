@@ -32,7 +32,7 @@ src/
 
 ## Data
 
-Firebase project `tripflow-db`. Collections: `trips`, `expenses`, `reminder_settings`. Images are compressed and stored inline in the expense.
+Firebase project `tripflow-2026`. Collections: `trips`, `expenses`, `reminder_settings`. Images are compressed and stored inline in the expense.
 
 `firestore.rules` holds the access rules. Paste into Firebase console → Firestore → Rules → Publish whenever it changes.
 
